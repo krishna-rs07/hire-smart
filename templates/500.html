@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - Hire Smart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="display-1 text-muted">500</div>
+            <h1 class="mb-3">Internal Server Error</h1>
+            <p class="lead text-muted mb-4">Something went wrong on our end. We're working to fix it.</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url 'landing' %}" class="btn btn-primary">Go Home</a>
+                <button onclick="window.location.reload()" class="btn btn-outline-primary">Try Again</button>
+            </div>
+            <p class="text-muted small mt-4">If this problem persists, please contact support.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

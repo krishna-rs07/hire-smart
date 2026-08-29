@@ -10,9 +10,14 @@ crispy-bootstrap5>=2024.10
 
 # Database (PostgreSQL ready)
 psycopg2-binary>=2.9,<3.0
+dj-database-url>=2.3,<3.0
 
 # File processing
 Pillow>=10.0,<11.0
+
+# Production deployment
+gunicorn>=21.0,<22.0
+whitenoise>=6.5,<7.0
 
 # For Phase 2 - AI/ML/NLP
 # Will be installed in Phase 2
