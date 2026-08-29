@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% load resume_tags %}
+
+{% block title %}Candidates - Hire Smart{% endblock %}
+
+{% block page_title %}All Candidates{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Candidates</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <!-- Header -->
+    <div class="page-head mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fas fa-users me-2"></i>All Candidates</h2>
+            <p class="text-muted mb-0">{{ page_obj.paginator.count }} candidate{{ page_obj.paginator.count|pluralize }} total</p>
+        </div>
+        <a href="{% url 'resumes:resume_upload' %}" class="btn btn-primary">
+            <i class="fas fa-upload me-2"></i>Upload Resumes
+        </a>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3" id="filterForm">
+                <div class="col-lg-4">
+                    <label class="form-label fw-semibold">Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search by name, email, or skill..." value="{{ search_query }}">
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label fw-semibold">Filter by Job</label>
+                    <select name="job" class="form-select" id="jobFilter">
+                        <option value="">All Jobs</option>
+                        {% for job in jobs %}
+                        <option value="{{ job.pk }}" {% if current_job == job.pk|stringformat:"s" %}selected{% endif %}>{{ job.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label fw-semibold">Recommendation</label>
+                    <select name="recommendation" class="form-select" id="recFilter">
+                        <option value="">All Recommendations</option>
+                        {% for value, label in recommendation_choices %}
+                        <option value="{{ value }}" {% if current_recommendation == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label fw-semibold">Sort By</label>
+                    <select name="sort" class="form-select" id="sortSelect">
+                        <option value="date_desc" {% if sort == 'date_desc' %}selected{% endif %}>Newest First</option>
+                        <option value="date_asc" {% if sort == 'date_asc' %}selected{% endif %}>Oldest First</option>
+                        <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Name A-Z</option>
+                        <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name Z-A</option>
+                        <option value="score_desc" {% if sort == 'score_desc' %}selected{% endif %}>Score High → Low</option>
+                        <option value="score_asc" {% if sort == 'score_asc' %}selected{% endif %}>Score Low → High</option>
+                    </select>
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i>Apply Filters</button>
+                    <a href="{% url 'resumes:candidate_list' %}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Active Filters Badges -->
+    {% if search_query or current_job or current_recommendation %}
+    <div class="mb-3">
+        <div class="d-flex flex-wrap gap-2">
+            {% if search_query %}
+            <span class="badge bg-primary bg-opacity-10 text-primary d-flex align-items-center gap-1">
+                <i class="fas fa-search"></i> "{{ search_query }}"
+                <a href="?{% if current_job %}job={{ current_job }}&{% endif %}{% if current_recommendation %}recommendation={{ current_recommendation }}&{% endif %}{% if sort and sort != 'date_desc' %}sort={{ sort }}{% endif %}" class="text-decoration-none"><i class="fas fa-times small"></i></a>
+            </span>
+            {% endif %}
+            {% if current_job %}
+            <span class="badge bg-info bg-opacity-10 text-info d-flex align-items-center gap-1">
+                <i class="fas fa-briefcase"></i> {{ selected_job.title|default:"Job" }}
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_recommendation %}recommendation={{ current_recommendation }}&{% endif %}{% if sort and sort != 'date_desc' %}sort={{ sort }}{% endif %}" class="text-decoration-none"><i class="fas fa-times small"></i></a>
+            </span>
+            {% endif %}
+            {% if current_recommendation %}
+            {% if current_recommendation == "Highly Recommended" %}
+            <span class="badge badge-rec-highly bg-opacity-10 d-flex align-items-center gap-1">
+                <i class="fas fa-star"></i> {{ current_recommendation }}
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_job %}job={{ current_job }}&{% endif %}{% if sort and sort != 'date_desc' %}sort={{ sort }}{% endif %}" class="text-decoration-none"><i class="fas fa-times small"></i></a>
+            </span>
+            {% elif current_recommendation == "Recommended" %}
+            <span class="badge badge-rec-recommended bg-opacity-10 d-flex align-items-center gap-1">
+                <i class="fas fa-star"></i> {{ current_recommendation }}
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_job %}job={{ current_job }}&{% endif %}{% if sort and sort != 'date_desc' %}sort={{ sort }}{% endif %}" class="text-decoration-none"><i class="fas fa-times small"></i></a>
+            </span>
+            {% elif current_recommendation == "Consider" %}
+            <span class="badge badge-rec-consider bg-opacity-10 d-flex align-items-center gap-1">
+                <i class="fas fa-star"></i> {{ current_recommendation }}
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_job %}job={{ current_job }}&{% endif %}{% if sort and sort != 'date_desc' %}sort={{ sort }}{% endif %}" class="text-decoration-none"><i class="fas fa-times small"></i></a>
+            </span>
+            {% else %}
+            <span class="badge badge-rec-not bg-opacity-10 d-flex align-items-center gap-1">
+                <i class="fas fa-star"></i> {{ current_recommendation }}
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_job %}job={{ current_job }}&{% endif %}{% if sort and sort != 'date_desc' %}sort={{ sort }}{% endif %}" class="text-decoration-none"><i class="fas fa-times small"></i></a>
+            </span>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if page_obj %}
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive table-responsive-stack">
+                <table class="table table-hover mb-0 table-mobile-cards" id="candidateTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">#</th>
+                            <th>Candidate</th>
+                            <th style="width: 200px;">Contact</th>
+                            <th style="width: 100px;" class="text-center">Experience</th>
+                            <th>Top Skills</th>
+                            <th style="width: 120px;" class="text-center">Best Match</th>
+                            <th style="width: 100px;" class="text-center">Screenings</th>
+                            <th style="width: 120px;">Created</th>
+                            <th style="width: 100px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for candidate in page_obj %}
+                        <tr class="candidate-row animate-slide-up stagger-{{ forloop.counter|divisibleby:6|yesno:'6,1' }}"
+                            data-name="{{ candidate.name|lower }}"
+                            data-email="{{ candidate.email|lower }}"
+                            data-skills="{{ candidate.skills|join:","|lower }}"
+                            data-score="{{ candidate.best_score|default:0 }}"
+                            data-date="{{ candidate.created_at|date:'U' }}">
+                            <td class="fw-bold text-muted" data-label="#">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+                            <td data-label="Candidate">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3">{{ candidate.name|first }}</div>
+                                    <div>
+                                        <div class="fw-medium">{{ candidate.name }}</div>
+                                        {% if candidate.location %}
+                                        <div class="small text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ candidate.location }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Contact">
+                                {% if candidate.email %}
+                                <div class="small"><i class="fas fa-envelope me-1 text-muted"></i>{{ candidate.email }}</div>
+                                {% endif %}
+                                {% if candidate.phone %}
+                                <div class="small"><i class="fas fa-phone me-1 text-muted"></i>{{ candidate.phone }}</div>
+                                {% endif %}
+                                {% if not candidate.email and not candidate.phone %}
+                                <span class="text-muted small">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center" data-label="Experience">
+                                <span class="fw-medium {% if candidate.total_experience >= 5 %}score-excellent{% elif candidate.total_experience >= 2 %}score-fair{% else %}text-muted{% endif %}">
+                                    {{ candidate.total_experience }} yr{{ candidate.total_experience|pluralize }}
+                                </span>
+                            </td>
+                            <td data-label="Top Skills">
+                                {% if candidate.skills %}
+                                {% for skill in candidate.skills|slice:":4" %}
+                                <span class="skill-pill">{{ skill }}</span>
+                                {% endfor %}
+                                {% if candidate.skills|length > 4 %}
+                                <span class="badge bg-light text-muted ms-1">+{{ candidate.skills|length|add:"-4" }}</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-muted small">No skills extracted</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center" data-label="Best Match">
+                                {% if candidate.best_score %}
+                                <span class="fw-bold fs-6 {% if candidate.best_score >= 90 %}score-excellent{% elif candidate.best_score >= 80 %}score-good{% elif candidate.best_score >= 65 %}score-fair{% else %}score-poor{% endif %}">
+                                    {{ candidate.best_score|floatformat:0 }}%
+                                </span>
+                                {% else %}
+                                <span class="text-muted small">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center" data-label="Screenings">
+                                <span class="badge bg-primary">{{ candidate.screening_results.count }}</span>
+                            </td>
+                            <td class="text-muted small" data-label="Created">{{ candidate.created_at|date:"M d, Y" }}</td>
+                            <td class="text-center" data-label="Actions">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'resumes:candidate_detail' candidate.pk %}" class="btn btn-outline-primary" title="View Profile">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'resumes:candidate_detail' candidate.pk %}#screenings" class="btn btn-outline-secondary" title="Screenings">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="card-footer bg-transparent border-top">
+                <nav aria-label="Candidate pagination">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_job %}job={{ current_job }}&{% endif %}{% if current_recommendation %}recommendation={{ current_recommendation }}&{% endif %}{% if sort and sort != 'date_desc' %}sort={{ sort }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_job %}job={{ current_job }}&{% endif %}{% if current_recommendation %}recommendation={{ current_recommendation }}&{% endif %}{% if sort and sort != 'date_desc' %}sort={{ sort }}&{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_job %}job={{ current_job }}&{% endif %}{% if current_recommendation %}recommendation={{ current_recommendation }}&{% endif %}{% if sort and sort != 'date_desc' %}sort={{ sort }}&{% endif %}page={{ page_obj.next_page_number }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                <div class="text-center text-muted small mt-2">
+                    Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} candidates
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state animate-fade-in">
+        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+            <i class="fas fa-users fa-2x"></i>
+        </div>
+        <h4 class="fw-bold">No Candidates Found</h4>
+        {% if search_query or current_job or current_recommendation %}
+        <p class="text-muted mb-4">Try adjusting your search or filters.</p>
+        <a href="{% url 'resumes:candidate_list' %}" class="btn btn-outline-primary">Clear All Filters</a>
+        {% else %}
+        <p class="text-muted mb-4">Upload resumes to create candidate profiles.</p>
+        <a href="{% url 'resumes:resume_upload' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-upload me-2"></i>Upload Resumes
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Responsible AI Disclaimer -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="icon-badge bg-warning bg-opacity-10 text-warning flex-shrink-0">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Responsible AI Notice</h6>
+                            <p class="small text-muted mb-0">
+                                This AI-assisted candidate listing is a decision-support tool, not a replacement for human judgment.
+                                Scores and rankings reflect keyword/skill matching and semantic similarity against job descriptions.
+                                They may not capture soft skills, cultural fit, career trajectory, or non-traditional backgrounds.
+                                Always review candidates holistically and ensure compliance with equal opportunity laws.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // URL parameter handling for filters
+    const form = document.getElementById('filterForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const params = new URLSearchParams();
+            const search = document.querySelector('input[name="search"]').value;
+            const job = document.getElementById('jobFilter').value;
+            const rec = document.getElementById('recFilter').value;
+            const sort = document.getElementById('sortSelect').value;
+
+            if (search) params.set('search', search);
+            if (job) params.set('job', job);
+            if (rec) params.set('recommendation', rec);
+            if (sort && sort !== 'date_desc') params.set('sort', sort);
+
+            window.location.href = '?' + params.toString();
+        });
+    }
+});
+</script>
+{% endblock %}

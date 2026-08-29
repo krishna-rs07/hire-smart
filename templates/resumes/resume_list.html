@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Resumes - Hire Smart{% endblock %}
+
+{% block page_title %}Uploaded Resumes{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Resumes</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <div class="page-head mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fas fa-file-alt me-2"></i>Uploaded Resumes</h2>
+            <p class="text-muted mb-0">Manage and track all uploaded candidate resumes.</p>
+        </div>
+        <a href="{% url 'resumes:resume_upload' %}" class="btn btn-primary">
+            <i class="fas fa-upload me-2"></i>Upload Resumes
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search by name or email..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>Filter</button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <a href="{% url 'resumes:resume_list' %}" class="btn btn-outline-secondary w-100">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if resumes %}
+    <div class="card">
+        <div class="table-responsive table-responsive-stack">
+            <table class="table table-hover mb-0 table-mobile-cards">
+                <thead>
+                    <tr>
+                        <th>Candidate</th>
+                        <th>File</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Uploaded</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resume in resumes %}
+                    <tr>
+                        <td data-label="Candidate">
+                            <strong>{{ resume.candidate.name }}</strong><br>
+                            <small class="text-muted">{{ resume.candidate.email|default:"No email" }}</small>
+                        </td>
+                        <td data-label="File">{{ resume.file.name|truncatechars:30 }}</td>
+                        <td data-label="Type">
+                            <span class="badge badge-resume-{{ resume.file_type }}">
+                                {{ resume.get_file_type_display }}
+                            </span>
+                        </td>
+                        <td data-label="Size">{{ resume.file_size|filesizeformat }}</td>
+                        <td data-label="Status">
+                            <span class="badge badge-resume-{{ resume.status }}">
+                                {{ resume.get_status_display }}
+                            </span>
+                        </td>
+                        <td data-label="Uploaded">{{ resume.uploaded_at|date:"M d, Y H:i" }}</td>
+                        <td data-label="Actions">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'resumes:resume_detail' resume.pk %}" class="btn btn-outline-primary" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'resumes:candidate_detail' resume.candidate.pk %}" class="btn btn-outline-secondary" title="Candidate Profile">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="card-footer">
+            <nav aria-label="Resume pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_status %}status={{ current_status }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_status %}status={{ current_status }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_status %}status={{ current_status }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state animate-fade-in">
+        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+            <i class="fas fa-file-alt fa-2x"></i>
+        </div>
+        <h4 class="fw-bold">No Resumes Yet</h4>
+        <p class="text-muted mb-4">Upload your first resume to start screening candidates.</p>
+        <a href="{% url 'resumes:resume_upload' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-upload me-2"></i>Upload Resumes
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

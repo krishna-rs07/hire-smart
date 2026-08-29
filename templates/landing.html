@@ -1,0 +1,555 @@
+{% extends 'base.html' %}
+
+{% block title %}Hire Smart - AI-Powered Resume Screening System{% endblock %}
+
+{% block main_class %}{% endblock %}
+
+{% block marketing_content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7 animate-slide-up">
+                <h1 class="hero-title display-2 fw-bold mb-4">Hire Smarter.<br>Find Better Talent.</h1>
+                <p class="hero-subtitle lead mb-5" style="color: rgba(255,255,255,0.9); font-size: 1.25rem; max-width: 520px;">
+                    AI-powered resume screening that helps recruiters discover the right candidates faster.
+                    Automate screening, rank candidates intelligently, and make data-driven hiring decisions.
+                </p>
+                <div class="d-flex gap-3 flex-wrap mb-4">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-5 py-3 fw-semibold">
+                        <i class="fas fa-rocket me-2"></i>Get Started Free
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg px-5 py-3 fw-semibold">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </div>
+                <div class="d-flex align-items-center gap-4 text-white-50 small">
+                    <span><i class="fas fa-shield-alt me-1"></i>No credit card required</span>
+                    <span><i class="fas fa-calendar-check me-1"></i>14-day free trial</span>
+                    <span><i class="fas fa-times-circle me-1"></i>Cancel anytime</span>
+                </div>
+            </div>
+            <div class="col-lg-5 animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="card border-0 shadow-xl" style="background: rgba(255,255,255,0.98); border-radius: var(--radius-xl);">
+                    <div class="card-body p-5">
+                        <h5 class="text-center mb-5 text-primary fw-bold">
+                            <i class="fas fa-brain me-2"></i>How It Works
+                        </h5>
+                        <div class="process-flow">
+                            <div class="process-step flex-fill text-center">
+                                <div class="step-icon mx-auto mb-3"><i class="fas fa-file-upload"></i></div>
+                                <h6 class="fw-bold">Upload</h6>
+                                <small class="text-muted">Drag & drop resumes (PDF/DOCX)</small>
+                            </div>
+                            <i class="fas fa-arrow-right process-arrow text-primary"></i>
+                            <div class="process-step flex-fill text-center">
+                                <div class="step-icon mx-auto mb-3"><i class="fas fa-brain"></i></div>
+                                <h6 class="fw-bold">AI Analysis</h6>
+                                <small class="text-muted">NLP extracts skills, experience, education</small>
+                            </div>
+                            <i class="fas fa-arrow-right process-arrow text-primary"></i>
+                            <div class="process-step flex-fill text-center">
+                                <div class="step-icon mx-auto mb-3"><i class="fas fa-chart-line"></i></div>
+                                <h6 class="fw-bold">Match & Score</h6>
+                                <small class="text-muted">Semantic matching & skill scoring</small>
+                            </div>
+                            <i class="fas fa-arrow-right process-arrow text-primary"></i>
+                            <div class="process-step flex-fill text-center">
+                                <div class="step-icon mx-auto mb-3"><i class="fas fa-trophy"></i></div>
+                                <h6 class="fw-bold">Rank & Shortlist</h6>
+                                <small class="text-muted">Explainable AI recommendations</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section-padding bg-white">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12 animate-fade-in">
+                <h2 class="fw-bold text-primary mb-3 display-5">Why Choose Hire Smart?</h2>
+                <p class="text-muted lead">Built for modern recruitment teams who value speed, accuracy, and fairness.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3 animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="card feature-card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-badge bg-primary bg-opacity-10 text-primary mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h5 class="fw-bold">AI Resume Screening</h5>
+                        <p class="text-muted">Advanced NLP extracts skills, experience, education, and certifications from resumes automatically.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="card feature-card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-badge bg-success bg-opacity-10 text-success mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h5 class="fw-bold">Smart Candidate Ranking</h5>
+                        <p class="text-muted">Hybrid scoring: skill matching (40%), semantic similarity (25%), experience (15%), education (10%), preferred skills (10%).</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 animate-fade-in" style="animation-delay: 0.3s;">
+                <div class="card feature-card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-badge bg-warning bg-opacity-10 text-warning mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h5 class="fw-bold">Explainable AI</h5>
+                        <p class="text-muted">Every score comes with a detailed breakdown - matched skills, missing skills, and AI-generated reasoning.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 animate-fade-in" style="animation-delay: 0.4s;">
+                <div class="card feature-card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-badge bg-info bg-opacity-10 text-info mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h5 class="fw-bold">Fair & Responsible</h5>
+                        <p class="text-muted">No demographic bias. Scoring based purely on job-relevant qualifications: skills, experience, education.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Capabilities -->
+<section class="section-padding" style="background: var(--color-surface);">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12 animate-fade-in">
+                <h2 class="fw-bold text-primary mb-3 display-5">Key Capabilities</h2>
+                <p class="text-muted lead">Everything you need to screen candidates efficiently.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6 animate-slide-up" style="animation-delay: 0.1s;">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <div class="icon-badge bg-primary bg-opacity-10 text-primary me-3 flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">Multi-Format Resume Parsing</h5>
+                                <p class="text-muted mb-0">Extract text from PDF (PyMuPDF) and DOCX (python-docx) files with error handling for corrupted files.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 animate-slide-up" style="animation-delay: 0.2s;">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <div class="icon-badge bg-success bg-opacity-10 text-success me-3 flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">Comprehensive Skill Extraction</h5>
+                                <p class="text-muted mb-0">50+ predefined technical skills across Programming, Web, Database, AI/ML, Cloud, Data, and DevOps categories.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 animate-slide-up" style="animation-delay: 0.3s;">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <div class="icon-badge bg-warning bg-opacity-10 text-warning me-3 flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                <i class="fas fa-project-diagram"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">Semantic Similarity Matching</h5>
+                                <p class="text-muted mb-0">TF-IDF + Cosine Similarity with optional Sentence Transformers for deep semantic understanding.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 animate-slide-up" style="animation-delay: 0.4s;">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <div class="icon-badge bg-info bg-opacity-10 text-info me-3 flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">Recruiter Dashboard</h5>
+                                <p class="text-muted mb-0">Real-time analytics: candidate pipeline, match score distributions, top skills, shortlist tracking.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI Matching Explanation -->
+<section class="section-padding bg-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 animate-slide-up">
+                <h2 class="fw-bold text-primary mb-4 display-6">How AI Matching Works</h2>
+                <p class="text-muted mb-5" style="font-size: 1.125rem;">Our transparent, weighted scoring system ensures you understand every recommendation.</p>
+
+                <div class="row g-3 mb-5">
+                    <div class="col-6">
+                        <div class="p-4 border rounded-xl text-center h-100" style="background: var(--color-surface);">
+                            <div class="fw-bold text-primary fs-1 mb-1">40%</div>
+                            <small class="text-muted d-block">Skill Matching</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-4 border rounded-xl text-center h-100" style="background: var(--color-surface);">
+                            <div class="fw-bold text-primary fs-1 mb-1">25%</div>
+                            <small class="text-muted d-block">Semantic Similarity</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-4 border rounded-xl text-center h-100" style="background: var(--color-surface);">
+                            <div class="fw-bold text-primary fs-1 mb-1">15%</div>
+                            <small class="text-muted d-block">Experience</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-4 border rounded-xl text-center h-100" style="background: var(--color-surface);">
+                            <div class="fw-bold text-primary fs-1 mb-1">10%</div>
+                            <small class="text-muted d-block">Education</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-4 border rounded-xl text-center h-100" style="background: var(--color-surface);">
+                            <div class="fw-bold text-primary fs-1 mb-1">10%</div>
+                            <small class="text-muted d-block">Preferred Skills</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info ai-note border-0 rounded-lg" role="alert">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-info-circle me-3 mt-1" style="font-size: 1.25rem;"></i>
+                        <div>
+                            <strong>Responsible AI Notice:</strong> AI-generated scores are decision-support indicators and should be reviewed by qualified recruiters. This system does not consider protected characteristics and is designed to reduce bias, but human oversight is essential.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="card border-0 shadow-lg" style="border-radius: var(--radius-xl);">
+                    <div class="card-body p-5">
+                        <h5 class="fw-bold mb-4 text-center">Sample Candidate Analysis</h5>
+                        <div class="row mb-4">
+                            <div class="col-4 text-center">
+                                <div class="score-circle mx-auto" style="width: 80px; height: 80px; font-size: 1.5rem; background: linear-gradient(135deg, var(--color-success), #34d399);">
+                                    92%
+                                </div>
+                            </div>
+                            <div class="col-8">
+                                <h6 class="fw-bold mb-2">Rahul Sharma</h6>
+                                <span class="badge badge-rec-highly-recommended fs-6 px-3 py-2">HIGHLY RECOMMENDED</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 mb-4">
+                            <div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted fw-medium">Skills</small>
+                                    <small class="text-success fw-bold">95%</small>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success" style="width: 95%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted fw-medium">Semantic Match</small>
+                                    <small class="text-primary fw-bold">90%</small>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-primary" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted fw-medium">Experience</small>
+                                    <small class="text-info fw-bold">88%</small>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-info" style="width: 88%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted fw-medium">Education</small>
+                                    <small class="text-warning fw-bold">100%</small>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-warning" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h6 class="fw-bold mb-3"><i class="fas fa-check-circle text-success me-2"></i>Matched Skills</h6>
+                        <div class="flex-wrap mb-4">
+                            <span class="skill-pill matched">Python</span>
+                            <span class="skill-pill matched">Django</span>
+                            <span class="skill-pill matched">SQL</span>
+                            <span class="skill-pill matched">REST API</span>
+                            <span class="skill-pill matched">Git</span>
+                        </div>
+
+                        <h6 class="fw-bold mb-3"><i class="fas fa-times-circle text-danger me-2"></i>Missing Skills</h6>
+                        <div class="flex-wrap">
+                            <span class="skill-pill missing">AWS</span>
+                            <span class="skill-pill missing">Docker</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recruiter Workflow Section -->
+<section class="section-padding" style="background: var(--color-surface);">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12 animate-fade-in">
+                <h2 class="fw-bold text-primary mb-3 display-5">Recruiter Workflow</h2>
+                <p class="text-muted lead">Streamlined from job creation to shortlist in minutes.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3 animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="icon-badge bg-primary bg-opacity-10 text-primary mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <h6 class="fw-bold">Create Job</h6>
+                    <p class="text-muted small mb-0">Define role, required skills, experience, education, and preferred skills with contextual guidance.</p>
+                </div>
+            </div>
+            <div class="col-md-3 animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="icon-badge bg-info bg-opacity-10 text-info mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h6 class="fw-bold">Upload Resumes</h6>
+                    <p class="text-muted small mb-0">Drag & drop multiple PDF/DOCX files with real-time validation and progress tracking.</p>
+                </div>
+            </div>
+            <div class="col-md-3 animate-fade-in" style="animation-delay: 0.3s;">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="icon-badge bg-warning bg-opacity-10 text-warning mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <h6 class="fw-bold">Screen Candidates</h6>
+                    <p class="text-muted small mb-0">Batch screen all candidates against the job with detailed AI analysis for each.</p>
+                </div>
+            </div>
+            <div class="col-md-3 animate-fade-in" style="animation-delay: 0.4s;">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="icon-badge bg-success bg-opacity-10 text-success mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h6 class="fw-bold">Review & Shortlist</h6>
+                    <p class="text-muted small mb-0">View ranked candidates with explainable scores, update status, and export reports.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section-padding" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%); color: white; position: relative; overflow: hidden;">
+    <div class="container text-center position-relative" style="z-index: 1;">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 animate-fade-in">
+                <h2 class="fw-bold mb-4 display-4">Ready to Transform Your Hiring?</h2>
+                <p class="lead mb-5 opacity-75" style="font-size: 1.25rem;">Join recruiters who are hiring smarter with AI-powered screening. Start your free trial today.</p>
+                <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-6 py-3 fw-semibold" style="border-radius: var(--radius-xl);">
+                    <i class="fas fa-rocket me-2"></i>Start Free Trial
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"20\" cy=\"20\" r=\"2\" fill=\"white\" opacity=\"0.1\"/><circle cx=\"80\" cy=\"40\" r=\"1.5\" fill=\"white\" opacity=\"0.1\"/><circle cx=\"40\" cy=\"80\" r=\"1\" fill=\"white\" opacity=\"0.1\"/><circle cx=\"90\" cy=\"90\" r=\"2\" fill=\"white\" opacity=\"0.1\"/></svg>') repeat;"></div>
+</section>
+
+<!-- Tech Stack Footer Info -->
+<section class="section-padding bg-white border-top">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-12 mb-5">
+                <h5 class="fw-bold text-muted mb-2">Built With Modern Technology</h5>
+                <p class="text-muted">Open source technologies powering intelligent hiring</p>
+            </div>
+            <div class="col-md-3 animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="p-3">
+                    <i class="fab fa-python fa-3x text-primary mb-3"></i>
+                    <p class="fw-bold mb-0">Django 5.2</p>
+                </div>
+            </div>
+            <div class="col-md-3 animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="p-3">
+                    <i class="fas fa-brain fa-3x text-success mb-3"></i>
+                    <p class="fw-bold mb-0">spaCy + scikit-learn</p>
+                </div>
+            </div>
+            <div class="col-md-3 animate-fade-in" style="animation-delay: 0.3s;">
+                <div class="p-3">
+                    <i class="fab fa-bootstrap fa-3x text-info mb-3"></i>
+                    <p class="fw-bold mb-0">Bootstrap 5</p>
+                </div>
+            </div>
+            <div class="col-md-3 animate-fade-in" style="animation-delay: 0.4s;">
+                <div class="p-3">
+                    <i class="fas fa-chart-bar fa-3x text-warning mb-3"></i>
+                    <p class="fw-bold mb-0">Chart.js</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+        padding: 6rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="1.5" fill="white" opacity="0.1"/><circle cx="30" cy="70" r="1" fill="white" opacity="0.1"/><circle cx="70" cy="90" r="2" fill="white" opacity="0.1"/></svg>') repeat;
+    }
+    .hero-title {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+    }
+    .hero-subtitle {
+        font-size: clamp(1.125rem, 2vw, 1.375rem);
+    }
+    .section-padding {
+        padding: 5rem 0;
+    }
+    .feature-card {
+        border-radius: var(--radius-xl);
+        transition: var(--transition-normal);
+    }
+    .feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl) !important;
+    }
+    .feature-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .process-flow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .process-step {
+        padding: 1rem;
+    }
+    .step-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin: 0 auto;
+    }
+    .process-arrow {
+        color: var(--color-primary);
+        font-size: 1.25rem;
+    }
+    .score-circle {
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+    }
+    .ai-note {
+        background: var(--color-primary-bg);
+        border: 1px solid var(--color-primary-border);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        color: var(--color-primary-text);
+    }
+    @media (max-width: 768px) {
+        .process-flow {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .process-arrow {
+            transform: rotate(90deg);
+        }
+        .section-padding {
+            padding: 3rem 0;
+        }
+        .hero-section {
+            padding: 4rem 0;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .animate-fade-in,
+        .animate-slide-up {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    }
+</style>
+{% endblock %}

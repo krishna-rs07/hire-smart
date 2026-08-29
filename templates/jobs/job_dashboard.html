@@ -1,0 +1,524 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ job.title }} - Candidate Rankings - Hire Smart{% endblock %}
+
+{% block page_title %}{{ job.title }} - Candidate Rankings{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:job_list' %}">Jobs</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:job_detail' job.pk %}">{{ job.title }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Candidate Rankings</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <!-- Job Info Header -->
+    <div class="page-head mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">{{ job.title }}</h2>
+            <p class="text-muted mb-0">
+                <i class="fas fa-building me-1"></i>{{ job.company.username }} ·
+                <i class="fas fa-calendar me-1 ms-3"></i>{{ job.created_at|date:"M d, Y" }} ·
+                <i class="fas fa-map-marker-alt me-1 ms-3"></i>{{ job.location|default:"Not specified" }} ·
+                <i class="fas fa-clock me-1 ms-3"></i>{{ job.get_employment_type_display }}
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'jobs:job_detail' job.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Job
+            </a>
+            <a href="{% url 'resumes:resume_upload' %}?job={{ job.pk }}" class="btn btn-success">
+                <i class="fas fa-upload me-1"></i>Upload Resumes
+            </a>
+            <a href="{% url 'jobs:job_edit' job.pk %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit me-1"></i>Edit Job
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Total Candidates</p>
+                            <h3 class="fw-bold mb-0">{{ total_candidates }}</h3>
+                        </div>
+                        <div class="icon-badge bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Avg Match Score</p>
+                            <h3 class="fw-bold mb-0">{{ avg_score|floatformat:1 }}%</h3>
+                        </div>
+                        <div class="icon-badge bg-info bg-opacity-10 text-info">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Highly Recommended</p>
+                            <h3 class="fw-bold text-success mb-0">{{ highly_recommended }}</h3>
+                        </div>
+                        <div class="icon-badge bg-success bg-opacity-10 text-success">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Recommended + Consider</p>
+                            <h3 class="fw-bold text-primary mb-0">{{ recommended_plus_consider }}</h3>
+                        </div>
+                        <div class="icon-badge bg-warning bg-opacity-10 text-warning">
+                            <i class="fas fa-thumbs-up"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if total_candidates == 0 %}
+    <!-- Empty State -->
+    <div class="empty-state animate-fade-in">
+        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+            <i class="fas fa-user-plus fa-2x"></i>
+        </div>
+        <h4 class="fw-bold">No Candidates Screened Yet</h4>
+        <p class="text-muted mb-4">Upload resumes and screen candidates to see rankings and analytics.</p>
+        <a href="{% url 'resumes:resume_upload' %}?job={{ job.pk }}" class="btn btn-primary">
+            <i class="fas fa-upload me-2"></i>Upload & Screen Resumes
+        </a>
+    </div>
+    {% else %}
+    <!-- Recommendation Distribution -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Recommendation Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="recDistChart" height="250"></canvas>
+                    {% if rec_labels|length == 0 %}
+                    <div class="chart-empty">
+                        <i class="fas fa-chart-pie fa-2x mb-2 opacity-25"></i>
+                        <p class="mb-0">No recommendation data</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Score Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="scoreDistChart" height="250"></canvas>
+                    {% if score_labels|length == 0 %}
+                    <div class="chart-empty">
+                        <i class="fas fa-chart-bar fa-2x mb-2 opacity-25"></i>
+                        <p class="mb-0">No score data</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Analysis -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-check-circle text-success me-2"></i>Top Matched Skills</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_matched_skills %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Skill</th>
+                                    <th class="text-end">Candidates</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for skill, count in top_matched_skills %}
+                                <tr>
+                                    <td><span class="skill-pill">{{ skill }}</span></td>
+                                    <td class="text-end fw-semibold">{{ count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No skill match data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-times-circle text-danger me-2"></i>Common Missing Skills</h5>
+                </div>
+                <div class="card-body">
+                    {% if common_missing_skills %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Skill</th>
+                                    <th class="text-end">Missing In</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for skill, count in common_missing_skills %}
+                                <tr>
+                                    <td><span class="skill-pill skill-pill-missing">{{ skill }}</span></td>
+                                    <td class="text-end fw-semibold text-danger">{{ count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No missing skill data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Ranking Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Candidate Rankings</h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" class="form-control border-start-0" id="rankingSearch" placeholder="Search candidates..." aria-label="Search candidates">
+                        </div>
+                        <select class="form-select form-select-sm" id="recFilter" style="width: auto; min-width: 180px;" aria-label="Filter by recommendation">
+                            <option value="">All Recommendations</option>
+                            <option value="Highly Recommended">Highly Recommended</option>
+                            <option value="Recommended">Recommended</option>
+                            <option value="Consider">Consider</option>
+                            <option value="Not Recommended">Not Recommended</option>
+                        </select>
+                        <select class="form-select form-select-sm" id="minScoreFilter" style="width: auto; min-width: 140px;" aria-label="Minimum score">
+                            <option value="">Min Score: Any</option>
+                            <option value="90">90+</option>
+                            <option value="80">80+</option>
+                            <option value="65">65+</option>
+                            <option value="50">50+</option>
+                        </select>
+                        <select class="form-select form-select-sm" id="sortSelect" style="width: auto; min-width: 160px;" aria-label="Sort by">
+                            <option value="score_desc">Score: High to Low</option>
+                            <option value="score_asc">Score: Low to High</option>
+                            <option value="name_asc">Name: A-Z</option>
+                            <option value="name_desc">Name: Z-A</option>
+                            <option value="date_desc">Newest First</option>
+                            <option value="date_asc">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive table-responsive-stack">
+                        <table class="table table-hover mb-0 table-mobile-cards" id="rankingTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;">Rank</th>
+                                    <th>Candidate</th>
+                                    <th style="width: 100px;" class="text-center">Overall</th>
+                                    <th style="width: 100px;" class="text-center">Skills</th>
+                                    <th style="width: 100px;" class="text-center">Semantic</th>
+                                    <th style="width: 100px;" class="text-center">Experience</th>
+                                    <th style="width: 100px;" class="text-center">Education</th>
+                                    <th style="width: 100px;" class="text-center">Preferred</th>
+                                    <th style="width: 160px;">Recommendation</th>
+                                    <th style="width: 100px;" class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in screening_results %}
+                                <tr class="candidate-row"
+                                    data-name="{{ result.candidate.name|lower }}"
+                                    data-email="{{ result.candidate.email|lower }}"
+                                    data-recommendation="{{ result.recommendation }}"
+                                    data-score="{{ result.overall_score }}"
+                                    data-date="{{ result.screened_at|date:'U' }}">
+                                    <td class="fw-bold text-primary" data-label="Rank">{{ forloop.counter }}</td>
+                                    <td data-label="Candidate">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-2">{{ result.candidate.name|first }}</div>
+                                            <div>
+                                                <div class="fw-medium">{{ result.candidate.name }}</div>
+                                                <div class="small text-muted">{{ result.candidate.email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center" data-label="Overall">
+                                        <span class="fw-bold fs-6 {% if result.overall_score >= 90 %}score-excellent{% elif result.overall_score >= 80 %}score-good{% elif result.overall_score >= 65 %}score-fair{% else %}score-poor{% endif %}">
+                                            {{ result.overall_score }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center" data-label="Skills">
+                                        <span class="fw-medium {% if result.skill_score >= 80 %}score-excellent{% elif result.skill_score >= 60 %}score-fair{% else %}score-poor{% endif %}">
+                                            {{ result.skill_score }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center" data-label="Semantic">
+                                        <span class="fw-medium {% if result.semantic_score >= 80 %}score-excellent{% elif result.semantic_score >= 60 %}score-fair{% else %}score-poor{% endif %}">
+                                            {{ result.semantic_score }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center" data-label="Experience">
+                                        <span class="fw-medium {% if result.experience_score >= 80 %}score-excellent{% elif result.experience_score >= 60 %}score-fair{% else %}score-poor{% endif %}">
+                                            {{ result.experience_score }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center" data-label="Education">
+                                        <span class="fw-medium {% if result.education_score >= 80 %}score-excellent{% elif result.education_score >= 60 %}score-fair{% else %}score-poor{% endif %}">
+                                            {{ result.education_score }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center" data-label="Preferred">
+                                        <span class="fw-medium {% if result.preferred_score >= 80 %}score-excellent{% elif result.preferred_score >= 60 %}score-fair{% else %}score-poor{% endif %}">
+                                            {{ result.preferred_score }}%
+                                        </span>
+                                    </td>
+                                    <td data-label="Recommendation">
+                                        {% if result.recommendation == "Highly Recommended" %}
+                                        <span class="badge badge-rec-highly px-3 py-2">{{ result.recommendation }}</span>
+                                        {% elif result.recommendation == "Recommended" %}
+                                        <span class="badge badge-rec-recommended px-3 py-2">{{ result.recommendation }}</span>
+                                        {% elif result.recommendation == "Consider" %}
+                                        <span class="badge badge-rec-consider px-3 py-2">{{ result.recommendation }}</span>
+                                        {% else %}
+                                        <span class="badge badge-rec-not px-3 py-2">{{ result.recommendation }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center" data-label="Action">
+                                        <a href="{% url 'screening:screening_detail' result.pk %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center py-4 text-muted">No screening results found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsible AI Disclaimer -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="icon-badge bg-warning bg-opacity-10 text-warning flex-shrink-0">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Responsible AI Notice</h6>
+                            <p class="small text-muted mb-0">
+                                This AI-assisted ranking is a decision-support tool, not a replacement for human judgment.
+                                Scores reflect keyword/skill matching and semantic similarity against the job description.
+                                They may not capture soft skills, cultural fit, career trajectory, or non-traditional backgrounds.
+                                Always review candidates holistically and ensure compliance with equal opportunity laws.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 250px;
+        text-align: center;
+    }
+    .skill-pill-missing {
+        background: #fee2e2;
+        border-color: #ef4444;
+        color: #b91c1c;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chart.js initialization for recommendation distribution
+const recLabels = {{ rec_labels|safe }};
+const recData = {{ rec_data|safe }};
+const scoreLabels = {{ score_labels|safe }};
+const scoreData = {{ score_data|safe }};
+const recColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'];
+
+if (typeof Chart !== 'undefined') {
+    // Recommendation Distribution Doughnut
+    const recCtx = document.getElementById('recDistChart');
+    if (recCtx && recLabels.length > 0) {
+        new Chart(recCtx, {
+            type: 'doughnut',
+            data: {
+                labels: recLabels,
+                datasets: [{
+                    data: recData,
+                    backgroundColor: recColors,
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, font: { size: 12 } } },
+                    tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw} (${((ctx.raw / recData.reduce((a,b)=>a+b,0))*100).toFixed(1))%)` } }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+
+    // Score Distribution Bar
+    const scoreCtx = document.getElementById('scoreDistChart');
+    if (scoreCtx && scoreLabels.length > 0) {
+        new Chart(scoreCtx, {
+            type: 'bar',
+            data: {
+                labels: scoreLabels,
+                datasets: [{
+                    label: 'Candidates',
+                    data: scoreData,
+                    backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#60a5fa', '#22c55e'],
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { drawBorder: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+}
+
+// Client-side filtering and sorting for ranking table
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('rankingSearch');
+    const recFilter = document.getElementById('recFilter');
+    const minScoreFilter = document.getElementById('minScoreFilter');
+    const sortSelect = document.getElementById('sortSelect');
+    const table = document.getElementById('rankingTable');
+    const tbody = table ? table.querySelector('tbody') : null;
+
+    if (!tbody) return;
+
+    const rows = Array.from(tbody.querySelectorAll('tr.candidate-row'));
+
+    function filterAndSort() {
+        const search = searchInput.value.toLowerCase();
+        const rec = recFilter.value;
+        const minScore = parseFloat(minScoreFilter.value) || 0;
+        const sort = sortSelect.value;
+
+        let filtered = rows.filter(row => {
+            const nameMatch = row.dataset.name.includes(search) || row.dataset.email.includes(search);
+            const recMatch = !rec || row.dataset.recommendation === rec;
+            const scoreMatch = parseFloat(row.dataset.score) >= minScore;
+            return nameMatch && recMatch && scoreMatch;
+        });
+
+        filtered.sort((a, b) => {
+            switch (sort) {
+                case 'score_desc': return parseFloat(b.dataset.score) - parseFloat(a.dataset.score);
+                case 'score_asc': return parseFloat(a.dataset.score) - parseFloat(b.dataset.score);
+                case 'name_asc': return a.dataset.name.localeCompare(b.dataset.name);
+                case 'name_desc': return b.dataset.name.localeCompare(a.dataset.name);
+                case 'date_desc': return parseInt(b.dataset.date) - parseInt(a.dataset.date);
+                case 'date_asc': return parseInt(a.dataset.date) - parseInt(b.dataset.date);
+                default: return 0;
+            }
+        });
+
+        // Re-append in sorted order and update rank numbers
+        filtered.forEach((row, idx) => {
+            tbody.appendChild(row);
+            row.cells[0].textContent = idx + 1;
+        });
+    }
+
+    searchInput.addEventListener('input', filterAndSort);
+    recFilter.addEventListener('change', filterAndSort);
+    minScoreFilter.addEventListener('change', filterAndSort);
+    sortSelect.addEventListener('change', filterAndSort);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ resume.candidate.name }} - Resume - Hire Smart{% endblock %}
+
+{% block page_title %}{{ resume.candidate.name }}{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'resumes:resume_list' %}">Resumes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ resume.candidate.name }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <div class="page-head mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">{{ resume.candidate.name }}</h2>
+            <p class="text-muted mb-0">Uploaded {{ resume.uploaded_at|date:"M d, Y H:i" }} · {{ resume.get_file_type_display }} · {{ resume.file_size|filesizeformat }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'resumes:candidate_detail' resume.candidate.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-user me-1"></i>Candidate Profile
+            </a>
+            <a href="{{ resume.file.url }}" class="btn btn-primary" target="_blank">
+                <i class="fas fa-download me-1"></i>Download
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Extracted Text -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Extracted Text</h5>
+                    <span class="badge badge-status-{{ resume.status }}">
+                        {{ resume.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    {% if resume.extracted_text %}
+                    <pre class="bg-light p-3 rounded" style="max-height: 500px; overflow-y: auto; white-space: pre-wrap; font-family: inherit; font-size: 0.9rem;">{{ resume.extracted_text|truncatechars:5000 }}</pre>
+                    {% if resume.extracted_text|length > 5000 %}
+                    <p class="text-muted small mt-2"><i class="fas fa-info-circle me-1"></i>Showing first 5000 characters. <a href="#" onclick="alert('Full text available in database')">View full text</a></p>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-clock fa-2x mb-2"></i>
+                        <p>Text extraction pending or failed.</p>
+                        {% if resume.error_message %}
+                        <div class="alert alert-danger mt-3">{{ resume.error_message }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Screening Results -->
+            {% if screening_results %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Screening Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive table-responsive-stack">
+                        <table class="table table-hover mb-0 table-mobile-cards">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Job</th>
+                                    <th class="text-center">Overall Score</th>
+                                    <th>Recommendation</th>
+                                    <th>Screened</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in screening_results %}
+                                <tr>
+                                    <td data-label="Job">
+                                        <strong>{{ result.job.title }}</strong>
+                                    </td>
+                                    <td class="text-center" data-label="Overall Score">
+                                        <span class="fw-bold {% if result.overall_score >= 90 %}score-excellent{% elif result.overall_score >= 80 %}score-good{% elif result.overall_score >= 65 %}score-fair{% else %}score-poor{% endif %}">
+                                            {{ result.overall_score }}%
+                                        </span>
+                                    </td>
+                                    <td data-label="Recommendation">
+                                        {% if result.recommendation == "Highly Recommended" %}
+                                        <span class="badge badge-rec-highly">{{ result.recommendation }}</span>
+                                        {% elif result.recommendation == "Recommended" %}
+                                        <span class="badge badge-rec-recommended">{{ result.recommendation }}</span>
+                                        {% elif result.recommendation == "Consider" %}
+                                        <span class="badge badge-rec-consider">{{ result.recommendation }}</span>
+                                        {% else %}
+                                        <span class="badge badge-rec-not">{{ result.recommendation }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Screened">{{ result.screened_at|date:"M d, Y H:i" }}</td>
+                                    <td data-label="Status">
+                                        <span class="badge badge-status-{{ result.status }}">
+                                            {{ result.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center" data-label="Actions">
+                                        <a href="{% url 'screening:screening_detail' result.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Candidate Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Candidate Info</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">{{ resume.candidate.email|default:"Not provided" }}</dd>
+
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8">{{ resume.candidate.phone|default:"Not provided" }}</dd>
+
+                        <dt class="col-sm-4">Location</dt>
+                        <dd class="col-sm-8">{{ resume.candidate.location|default:"Not provided" }}</dd>
+
+                        <dt class="col-sm-4">Experience</dt>
+                        <dd class="col-sm-8">{{ resume.candidate.total_experience }} years</dd>
+
+                        <dt class="col-sm-4">Education</dt>
+                        <dd class="col-sm-8">{{ resume.candidate.education|default:"Not provided"|truncatechars:50 }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            {% if resume.candidate.skills %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-code me-2"></i>Skills ({{ resume.candidate.skills|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="flex-wrap">
+                        {% for skill in resume.candidate.skills %}
+                        <span class="skill-pill">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Certifications -->
+            {% if resume.candidate.certifications %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-certificate me-2"></i>Certifications</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        {% for cert in resume.candidate.certifications %}
+                        <li class="mb-1">{{ cert }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- File Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>File Details</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Type</dt>
+                        <dd class="col-sm-7">{{ resume.get_file_type_display }}</dd>
+
+                        <dt class="col-sm-5">Size</dt>
+                        <dd class="col-sm-7">{{ resume.file_size|filesizeformat }}</dd>
+
+                        <dt class="col-sm-5">Uploaded</dt>
+                        <dd class="col-sm-7">{{ resume.uploaded_at|date:"M d, Y H:i" }}</dd>
+
+                        <dt class="col-sm-5">Status</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge badge-status-{{ resume.status }}">
+                                {{ resume.get_status_display }}
+                            </span>
+                        </dd>
+
+                        {% if resume.processed_at %}
+                        <dt class="col-sm-5">Processed</dt>
+                        <dd class="col-sm-7">{{ resume.processed_at|date:"M d, Y H:i" }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

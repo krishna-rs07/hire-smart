@@ -1,0 +1,244 @@
+[
+  {
+    "name": "B.A. English vs B.Tech CS Job (Education field loss bug)",
+    "expected": "Education score should be 90 (right level, diff field) not 95 (field lost)",
+    "overall_score": 21.5,
+    "skill_score": 0.0,
+    "semantic_score": 2.5,
+    "experience_score": 26.67,
+    "education_score": 90.0,
+    "preferred_skill_score": 50.0,
+    "job_title_score": 30.0,
+    "recommendation": "Not Recommended",
+    "confidence": 0.79,
+    "matched_skills": [],
+    "missing_skills": [
+      "git",
+      "django",
+      "python",
+      "rest api",
+      "postgresql"
+    ],
+    "missing_preferred_skills": []
+  },
+  {
+    "name": "Mechanical Engineer with 5 years exp (Experience extraction)",
+    "expected": "Experience score correctly extracted as 5 years from dates",
+    "overall_score": 24.51,
+    "skill_score": 0.0,
+    "semantic_score": 2.57,
+    "experience_score": 100.0,
+    "education_score": 60.0,
+    "preferred_skill_score": 0.0,
+    "job_title_score": 30.0,
+    "recommendation": "Not Recommended",
+    "confidence": 0.75,
+    "matched_skills": [],
+    "missing_skills": [
+      "django",
+      "ci/cd",
+      "python",
+      "postgresql",
+      "git",
+      "rest api"
+    ],
+    "missing_preferred_skills": [
+      "fastapi",
+      "celery",
+      "microservices",
+      "flask",
+      "redis",
+      "aws",
+      "docker"
+    ]
+  },
+  {
+    "name": "Strong Python Developer (Full pipeline test)",
+    "expected": "High overall score with all components working correctly",
+    "overall_score": 83.47,
+    "skill_score": 83.33,
+    "semantic_score": 46.52,
+    "experience_score": 100.0,
+    "education_score": 100.0,
+    "preferred_skill_score": 100.0,
+    "job_title_score": 100.0,
+    "recommendation": "Recommended",
+    "confidence": 0.8,
+    "matched_skills": [
+      "django",
+      "python",
+      "postgresql",
+      "git",
+      "rest api"
+    ],
+    "missing_skills": [
+      "ci/cd"
+    ],
+    "missing_preferred_skills": []
+  },
+  {
+    "name": "Data Scientist with ML skills (Skill alias normalization)",
+    "expected": "ML aliases (ml, ai) map to 'machine learning'; cloud aliases work",
+    "overall_score": 58.59,
+    "skill_score": 71.43,
+    "semantic_score": 42.97,
+    "experience_score": 0.0,
+    "education_score": 100.0,
+    "preferred_skill_score": 50.0,
+    "job_title_score": 100.0,
+    "recommendation": "Not Recommended",
+    "confidence": 0.5,
+    "matched_skills": [
+      "pandas",
+      "sql",
+      "python",
+      "scikit-learn",
+      "data science"
+    ],
+    "missing_skills": [
+      "statistics",
+      "machine learning"
+    ],
+    "missing_preferred_skills": [
+      "aws",
+      "docker"
+    ]
+  },
+  {
+    "name": "Frontend Developer (JavaScript aliases + skill extraction)",
+    "expected": "JS/TS/Node aliases normalized; React/Next.js extracted",
+    "overall_score": 64.44,
+    "skill_score": 100.0,
+    "semantic_score": 45.52,
+    "experience_score": 0.0,
+    "education_score": 70.0,
+    "preferred_skill_score": 33.33,
+    "job_title_score": 100.0,
+    "recommendation": "Not Recommended",
+    "confidence": 0.5,
+    "matched_skills": [
+      "css",
+      "typescript",
+      "react",
+      "html",
+      "redux",
+      "javascript"
+    ],
+    "missing_skills": [],
+    "missing_preferred_skills": [
+      "cypress",
+      "graphql"
+    ]
+  },
+  {
+    "name": "DevOps Engineer (Cloud/DevOps skills + aliases)",
+    "expected": "Cloud aliases (aws, gcp, azure) work; k8s/kubernetes normalized",
+    "overall_score": 63.72,
+    "skill_score": 85.71,
+    "semantic_score": 46.11,
+    "experience_score": 0.0,
+    "education_score": 70.0,
+    "preferred_skill_score": 75.0,
+    "job_title_score": 100.0,
+    "recommendation": "Not Recommended",
+    "confidence": 0.5,
+    "matched_skills": [
+      "aws",
+      "gitlab",
+      "kubernetes",
+      "terraform",
+      "jenkins",
+      "docker"
+    ],
+    "missing_skills": [
+      "ci/cd"
+    ],
+    "missing_preferred_skills": [
+      "go"
+    ]
+  },
+  {
+    "name": "Trailing period boundary fix (PostgreSQL.)",
+    "expected": "PostgreSQL. (with trailing dot) should be extracted",
+    "overall_score": 66.92,
+    "skill_score": 100.0,
+    "semantic_score": 49.62,
+    "experience_score": 0.0,
+    "education_score": 70.0,
+    "preferred_skill_score": 50.0,
+    "job_title_score": 100.0,
+    "recommendation": "Consider",
+    "confidence": 0.65,
+    "matched_skills": [
+      "django",
+      "python",
+      "postgresql"
+    ],
+    "missing_skills": [],
+    "missing_preferred_skills": []
+  },
+  {
+    "name": "AWS alias conflict fix (aws -> amazon web services)",
+    "expected": "AWS extracted as 'aws' (canonical) not lost via alias",
+    "overall_score": 66.92,
+    "skill_score": 100.0,
+    "semantic_score": 49.62,
+    "experience_score": 0.0,
+    "education_score": 70.0,
+    "preferred_skill_score": 50.0,
+    "job_title_score": 100.0,
+    "recommendation": "Consider",
+    "confidence": 0.65,
+    "matched_skills": [
+      "aws",
+      "kubernetes",
+      "docker"
+    ],
+    "missing_skills": [],
+    "missing_preferred_skills": []
+  },
+  {
+    "name": "Skill classification precedence (Preferred vs Required)",
+    "expected": "Preferred skills (Flask, Redis) correctly classified, not overridden by requirements section",
+    "overall_score": 62.19,
+    "skill_score": 66.67,
+    "semantic_score": 44.26,
+    "experience_score": 0.0,
+    "education_score": 100.0,
+    "preferred_skill_score": 100.0,
+    "job_title_score": 100.0,
+    "recommendation": "Not Recommended",
+    "confidence": 0.5,
+    "matched_skills": [
+      "django",
+      "python"
+    ],
+    "missing_skills": [
+      "rest api"
+    ],
+    "missing_preferred_skills": []
+  },
+  {
+    "name": "PhD in Machine Learning (New education pattern)",
+    "expected": "PhD in Machine Learning extracted with field; education level = 5 (PhD)",
+    "overall_score": 55.65,
+    "skill_score": 100.0,
+    "semantic_score": 43.24,
+    "experience_score": 0.0,
+    "education_score": 70.0,
+    "preferred_skill_score": 0.0,
+    "job_title_score": 50.0,
+    "recommendation": "Not Recommended",
+    "confidence": 0.5,
+    "matched_skills": [
+      "machine learning",
+      "python",
+      "tensorflow",
+      "pytorch"
+    ],
+    "missing_skills": [],
+    "missing_preferred_skills": [
+      "mlops"
+    ]
+  }
+]

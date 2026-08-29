@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ result.candidate.name }} - Screening Details - Hire Smart{% endblock %}
+
+{% block page_title %}{{ result.candidate.name }}{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'screening:screening_list' %}">Screening Results</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'screening:candidate_ranking' result.job.pk %}">{{ result.job.title }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ result.candidate.name }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <div class="page-head mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">{{ result.candidate.name }}</h2>
+            <p class="text-muted mb-0">Screened for <strong>{{ result.job.title }}</strong> · {{ result.screened_at|date:"M d, Y H:i" }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'screening:candidate_ranking' result.job.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Ranking
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Score Card -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center p-5">
+                    <div class="mb-3">
+                        <div class="score-circle mx-auto" style="width: 140px; height: 140px; font-size: 2.5rem; background: linear-gradient(135deg,
+                            {% if result.overall_score >= 90 %}#10b981, #34d399
+                            {% elif result.overall_score >= 80 %}#3b82f6, #60a5fa
+                            {% elif result.overall_score >= 65 %}#f59e0b, #fbbf24
+                            {% else %}#ef4444, #f87171{% endif %});">
+                            {{ result.overall_score }}%
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="badge badge-hire badge-{{ result.get_recommendation_badge_class }} fs-6 px-4 py-2">
+                            {{ result.recommendation }}
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="badge bg-{% if result.status == 'shortlisted' %}success{% elif result.status == 'rejected' %}danger{% elif result.status == 'hired' %}primary{% else %}warning{% endif %} fs-6 px-3 py-2">
+                            Status: {{ result.get_status_display }}
+                        </span>
+                    </div>
+
+                    <!-- Status Update Form -->
+                    <form method="post" action="{% url 'screening:update_status' result.pk %}" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            {% for value, label in result.STATUS_CHOICES %}
+                            <button type="submit" name="status" value="{{ value }}" class="btn btn-{% if value == 'shortlisted' %}success{% elif value == 'rejected' %}danger{% elif value == 'hired' %}primary{% else %}outline-{% if value == 'screened' %}secondary{% else %}warning{% endif %}{% endif %} {% if result.status == value %}active{% endif %}" {% if result.status == value %}disabled{% endif %}>
+                                <i class="fas fa-{% if value == 'shortlisted' %}star{% elif value == 'rejected' %}times{% elif value == 'hired' %}check-circle{% else %}clock{% endif %} me-2"></i>{{ label }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Candidate Quick Info -->
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-user me-2"></i>Candidate Info</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">{{ result.candidate.email|default:"Not provided" }}</dd>
+
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8">{{ result.candidate.phone|default:"Not provided" }}</dd>
+
+                        <dt class="col-sm-4">Experience</dt>
+                        <dd class="col-sm-8">{{ result.candidate.total_experience }} years</dd>
+
+                        <dt class="col-sm-4">Location</dt>
+                        <dd class="col-sm-8">{{ result.candidate.location|default:"Not provided" }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Breakdown & Details -->
+        <div class="col-lg-7">
+            <!-- Score Breakdown -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Score Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Skill Match <span class="text-primary">{{ result.skill_score }}%</span></label>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ skill_width }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Semantic Similarity <span class="text-info">{{ result.semantic_score }}%</span></label>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ semantic_width }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Experience <span class="text-warning">{{ result.experience_score }}%</span></label>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ experience_width }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Education <span class="text-success">{{ result.education_score }}%</span></label>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ education_width }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Preferred Skills <span class="text-secondary">{{ result.preferred_skill_score }}%</span></label>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ preferred_width }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ai-note mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Weighted Formula:</strong> Skills 40% + Semantic 25% + Experience 15% + Education 10% + Preferred 10%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matched & Missing Skills -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-success bg-opacity-10">
+                            <h6 class="mb-0 text-success"><i class="fas fa-check-circle me-2"></i>Matched Skills ({{ result.matched_skills|length }})</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if result.matched_skills %}
+                            <div class="flex-wrap">
+                                {% for skill in result.matched_skills %}
+                                <span class="skill-pill matched">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted mb-0">No matched skills</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-danger bg-opacity-10">
+                            <h6 class="mb-0 text-danger"><i class="fas fa-times-circle me-2"></i>Missing Required Skills ({{ result.missing_skills|length }})</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if result.missing_skills %}
+                            <div class="flex-wrap">
+                                {% for skill in result.missing_skills %}
+                                <span class="skill-pill missing">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted mb-0">All required skills matched!</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if result.missing_preferred_skills %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning bg-opacity-10">
+                    <h6 class="mb-0 text-warning"><i class="fas fa-star me-2"></i>Missing Preferred Skills ({{ result.missing_preferred_skills|length }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="flex-wrap">
+                        {% for skill in result.missing_preferred_skills %}
+                        <span class="skill-pill" style="background: #fef3c7; border-color: #f59e0b; color: #92400e;">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- AI Explanation -->
+            {% if result.explanation or result.strengths or result.weaknesses %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0 text-primary"><i class="fas fa-brain me-2"></i>AI Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if result.explanation %}
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Summary</h6>
+                        <p class="mb-0">{{ result.explanation }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if result.strengths %}
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-success"><i class="fas fa-thumbs-up me-2"></i>Strengths</h6>
+                        <ul class="mb-0">
+                            {% for strength in result.strengths %}
+                            <li>{{ strength }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {% if result.weaknesses %}
+                    <div>
+                        <h6 class="fw-bold text-danger"><i class="fas fa-thumbs-down me-2"></i>Areas for Improvement</h6>
+                        <ul class="mb-0">
+                            {% for weakness in result.weaknesses %}
+                            <li>{{ weakness }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- Responsible AI Disclaimer -->
+                    <div class="alert alert-warning mt-4 mb-0" role="alert">
+                        <div class="d-flex">
+                            <i class="fas fa-shield-alt me-2 mt-1" style="font-size: 1.25rem;"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Responsible AI Notice</h6>
+                                <p class="mb-0 small">
+                                    This is an AI-assisted decision support tool. Final hiring decisions should be made by qualified human evaluators.
+                                    This system does not consider protected characteristics (race, gender, age, religion, disability, etc.) and is designed
+                                    to reduce bias, but human oversight is essential. The AI scores and recommendations are based solely on
+                                    skills, experience, education, and content alignment with the job description.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

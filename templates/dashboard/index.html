@@ -1,0 +1,614 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Hire Smart{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <!-- Welcome Header -->
+    <div class="page-head mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Welcome back, {{ user.username }}!</h2>
+            <p class="text-muted mb-0">Here's what's happening with your recruitment pipeline.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'jobs:job_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>New Job
+            </a>
+            <a href="{% url 'resumes:resume_upload' %}" class="btn btn-success">
+                <i class="fas fa-upload me-1"></i>Upload Resumes
+            </a>
+            <a href="{% url 'screening:screening_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-chart-line me-1"></i>Screen Candidates
+            </a>
+            <a href="{% url 'reports:index' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-chart-bar me-1"></i>View Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- 8 Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card h-100 animate-slide-up stagger-1">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value">{{ total_jobs }}</div>
+                        <div class="stat-label">Total Jobs</div>
+                    </div>
+                    <div class="icon-badge bg-primary bg-opacity-10 text-primary">
+                        <i class="fas fa-briefcase fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-success small">
+                    <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i>{{ active_jobs }} active
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card h-100 animate-slide-up stagger-2" style="border-left-color: var(--hire-success);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value score-excellent">{{ total_resumes }}</div>
+                        <div class="stat-label">Resumes Uploaded</div>
+                    </div>
+                    <div class="icon-badge bg-success bg-opacity-10 text-success">
+                        <i class="fas fa-file-alt fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-muted small">{{ total_candidates }} unique candidates</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card h-100 animate-slide-up stagger-3" style="border-left-color: var(--hire-info);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value score-good">{{ screened_candidates }}</div>
+                        <div class="stat-label">Candidates Screened</div>
+                    </div>
+                    <div class="icon-badge bg-info bg-opacity-10 text-info">
+                        <i class="fas fa-chart-line fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-muted small">{{ shortlisted_candidates }} shortlisted · {{ hired_candidates }} hired</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card h-100 animate-slide-up stagger-4" style="border-left-color: var(--hire-warning);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value score-fair">{{ avg_match_score }}%</div>
+                        <div class="stat-label">Avg Match Score</div>
+                    </div>
+                    <div class="icon-badge bg-warning bg-opacity-10 text-warning">
+                        <i class="fas fa-percentage fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-muted small">{{ rejected_candidates }} rejected</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card h-100 animate-slide-up stagger-5" style="border-left-color: var(--hire-success);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value score-excellent">{{ highly_recommended_count }}</div>
+                        <div class="stat-label">Highly Recommended</div>
+                    </div>
+                    <div class="icon-badge bg-success bg-opacity-10 text-success">
+                        <i class="fas fa-star fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-muted small">Score ≥ 90%</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card h-100 animate-slide-up stagger-6" style="border-left-color: var(--hire-info);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value score-good">{{ recommended_count }}</div>
+                        <div class="stat-label">Recommended</div>
+                    </div>
+                    <div class="icon-badge bg-info bg-opacity-10 text-info">
+                        <i class="fas fa-thumbs-up fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-muted small">Score 80-89%</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card h-100" style="border-left-color: var(--hire-warning);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value score-fair">{{ consider_count }}</div>
+                        <div class="stat-label">Consider</div>
+                    </div>
+                    <div class="icon-badge bg-warning bg-opacity-10 text-warning">
+                        <i class="fas fa-user-clock fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-muted small">Score 65-79%</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card h-100" style="border-left-color: var(--hire-danger);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value score-poor">{{ not_recommended_count }}</div>
+                        <div class="stat-label">Not Recommended</div>
+                    </div>
+                    <div class="icon-badge bg-danger bg-opacity-10 text-danger">
+                        <i class="fas fa-times-circle fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-muted small">Score < 65%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1: Recommendation Distribution + Candidate Pipeline -->
+    <div class="row g-4 mb-4">
+        <!-- Recommendation Distribution -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Recommendation Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="recommendationChart"></canvas>
+                    </div>
+                    {% if not rec_labels %}
+                    <div class="empty-state">
+                        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+                            <i class="fas fa-chart-pie fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold">No Screening Data</h4>
+                        <p class="text-muted mb-4">Screen candidates to see recommendation distribution.</p>
+                        <a href="{% url 'screening:screening_list' %}" class="btn btn-outline-primary">Screen Candidates</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Candidate Status Pipeline -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Candidate Pipeline</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    {% if not status_labels %}
+                    <div class="empty-state">
+                        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+                            <i class="fas fa-chart-bar fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold">No Pipeline Data</h4>
+                        <p class="text-muted mb-4">Screen candidates to see pipeline status.</p>
+                        <a href="{% url 'screening:screening_list' %}" class="btn btn-outline-primary">Screen Candidates</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2: Score Distribution + Weekly Activity -->
+    <div class="row g-4 mb-4">
+        <!-- Score Distribution -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Score Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="scoreChart"></canvas>
+                    </div>
+                    {% if not score_labels %}
+                    <div class="empty-state">
+                        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+                            <i class="fas fa-chart-area fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold">No Score Data</h4>
+                        <p class="text-muted mb-4">Screen candidates to see score distribution.</p>
+                        <a href="{% url 'screening:screening_list' %}" class="btn btn-outline-primary">Screen Candidates</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Activity -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Screening Activity (Last 7 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                    {% if not weekly_labels %}
+                    <div class="empty-state">
+                        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+                            <i class="fas fa-calendar-alt fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold">No Activity Data</h4>
+                        <p class="text-muted mb-4">Screen candidates to see weekly activity.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 3: Top Skills + Quick Stats Summary -->
+    <div class="row g-4 mb-4">
+        <!-- Top Skills -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-code me-2"></i>Top Required Skills</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                    {% if not top_skills_labels %}
+                    <div class="empty-state">
+                        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+                            <i class="fas fa-code fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold">No Skills Data</h4>
+                        <p class="text-muted mb-4">Create jobs with required skills to see analysis.</p>
+                        <a href="{% url 'jobs:job_create' %}" class="btn btn-primary">Create Job</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions / Summary -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'jobs:job_create' %}" class="btn btn-primary d-flex align-items-center justify-content-start gap-2">
+                            <i class="fas fa-plus-circle fa-lg"></i>
+                            <span class="fw-medium">Create New Job</span>
+                        </a>
+                        <a href="{% url 'resumes:resume_upload' %}" class="btn btn-success d-flex align-items-center justify-content-start gap-2">
+                            <i class="fas fa-file-upload fa-lg"></i>
+                            <span class="fw-medium">Upload Resumes</span>
+                        </a>
+                        <a href="{% url 'screening:screening_list' %}" class="btn btn-outline-primary d-flex align-items-center justify-content-start gap-2">
+                            <i class="fas fa-search fa-lg"></i>
+                            <span class="fw-medium">Screen Candidates</span>
+                        </a>
+                        <a href="{% url 'reports:index' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-start gap-2">
+                            <i class="fas fa-file-alt fa-lg"></i>
+                            <span class="fw-medium">View Reports</span>
+                        </a>
+                    </div>
+                    <hr class="my-3">
+                    <div class="small text-muted">
+                        <strong>Pipeline Health:</strong>
+                        <div class="mt-1">
+                            <span class="badge badge-rec-highly me-2"></span> {{ highly_recommended_count }} highly recommended
+                        </div>
+                        <div>
+                            <span class="badge badge-rec-recommended me-2"></span> {{ recommended_count }} recommended
+                        </div>
+                        <div>
+                            <span class="badge badge-rec-consider me-2"></span> {{ consider_count }} to consider
+                        </div>
+                        <div>
+                            <span class="badge badge-rec-not me-2"></span> {{ not_recommended_count }} not recommended
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row g-4">
+        <!-- Recent Jobs -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Recent Jobs</h5>
+                    <a href="{% url 'jobs:job_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_jobs %}
+                    <div class="list-group list-group-flush">
+                        {% for job in recent_jobs %}
+                        <a href="{% url 'jobs:job_detail' job.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ job.title }}</strong>
+                                    <span class="badge badge-status-{{ job.status }} ms-2">{{ job.get_status_display }}</span>
+                                </div>
+                                <small class="text-muted">{{ job.created_at|timesince }} ago</small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+                            <i class="fas fa-briefcase fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold">No Jobs Yet</h4>
+                        <p class="text-muted mb-3">Create your first job to start recruiting.</p>
+                        <a href="{% url 'jobs:job_create' %}" class="btn btn-primary">Create Your First Job</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Resumes -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Recent Resumes</h5>
+                    <a href="{% url 'resumes:resume_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_resumes %}
+                    <div class="list-group list-group-flush">
+                        {% for resume in recent_resumes %}
+                        <a href="{% url 'resumes:resume_detail' resume.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ resume.candidate.name }}</strong>
+                                    <span class="badge badge-resume-{{ resume.file_type }} ms-2">{{ resume.get_file_type_display }}</span>
+                                    <span class="badge badge-resume-{{ resume.status }} ms-1">{{ resume.get_status_display }}</span>
+                                </div>
+                                <small class="text-muted">{{ resume.uploaded_at|timesince }} ago</small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+                            <i class="fas fa-file-alt fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold">No Resumes Yet</h4>
+                        <p class="text-muted mb-3">Upload your first resume to start screening.</p>
+                        <a href="{% url 'resumes:resume_upload' %}" class="btn btn-success">Upload First Resume</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Screenings -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Recent Screenings</h5>
+                    <a href="{% url 'screening:screening_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_screenings %}
+                    <div class="list-group list-group-flush">
+                        {% for screening in recent_screenings %}
+                        <a href="{% url 'screening:screening_detail' screening.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ screening.candidate.name }}</strong>
+                                    {% if screening.recommendation == "Highly Recommended" %}
+    <span class="badge badge-rec-highly ms-2">{{ screening.recommendation }}</span>
+{% elif screening.recommendation == "Recommended" %}
+    <span class="badge badge-rec-recommended ms-2">{{ screening.recommendation }}</span>
+{% elif screening.recommendation == "Consider" %}
+    <span class="badge badge-rec-consider ms-2">{{ screening.recommendation }}</span>
+{% else %}
+    <span class="badge badge-rec-not ms-2">{{ screening.recommendation }}</span>
+{% endif %}
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold {% if screening.overall_score >= 90 %}score-excellent{% elif screening.overall_score >= 80 %}score-good{% elif screening.overall_score >= 65 %}score-fair{% else %}score-poor{% endif %}">{{ screening.overall_score }}%</div>
+                                    <small class="text-muted">{{ screening.screened_at|timesince }} ago</small>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold">No Screenings Yet</h4>
+                        <p class="text-muted mb-3">Upload resumes and run screening to see results.</p>
+                        <a href="{% url 'screening:screening_list' %}" class="btn btn-outline-primary">Screen Candidates</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chart.js Configuration
+const chartColors = {
+    primary: '#4338ca',
+    success: '#10b981',
+    info: '#3b82f6',
+    warning: '#f59e0b',
+    danger: '#ef4444',
+    secondary: '#64748b'
+};
+
+// Recommendation Distribution - Doughnut Chart
+const recCtx = document.getElementById('recommendationChart');
+{% if rec_labels %}
+new Chart(recCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ rec_labels|safe }},
+        datasets: [{
+            data: {{ rec_data|safe }},
+            backgroundColor: [
+                chartColors.success,  // Highly Recommended
+                chartColors.info,     // Recommended
+                chartColors.warning,  // Consider
+                chartColors.danger    // Not Recommended
+            ],
+            borderWidth: 0,
+            borderRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 15, usePointStyle: true }
+            }
+        }
+    }
+});
+{% endif %}
+
+// Status Distribution - Bar Chart
+const statusCtx = document.getElementById('statusChart');
+{% if status_labels %}
+new Chart(statusCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ status_labels|safe }},
+        datasets: [{
+            label: 'Candidates',
+            data: {{ status_data|safe }},
+            backgroundColor: [
+                chartColors.secondary,  // new
+                chartColors.info,       // screened
+                chartColors.success,    // shortlisted
+                chartColors.danger,     // rejected
+                chartColors.primary     // hired
+            ],
+            borderRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+{% endif %}
+
+// Score Distribution - Bar Chart
+const scoreCtx = document.getElementById('scoreChart');
+{% if score_labels %}
+new Chart(scoreCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ score_labels|safe }},
+        datasets: [{
+            label: 'Candidates',
+            data: {{ score_data|safe }},
+            backgroundColor: [
+                chartColors.danger,     // <50
+                chartColors.warning,    // 50-64
+                chartColors.info,       // 65-79
+                chartColors.success,    // 80-89
+                chartColors.primary     // 90-100
+            ],
+            borderRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+{% endif %}
+
+// Weekly Activity - Line Chart
+const weeklyCtx = document.getElementById('weeklyChart');
+new Chart(weeklyCtx, {
+    type: 'line',
+    data: {
+        labels: {{ weekly_labels|safe }},
+        datasets: [{
+            label: 'Screenings',
+            data: {{ weekly_data|safe }},
+            fill: true,
+            backgroundColor: 'rgba(67, 56, 202, 0.1)',
+            borderColor: chartColors.primary,
+            borderWidth: 3,
+            tension: 0.4,
+            pointBackgroundColor: chartColors.primary,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
+// Top Skills - Horizontal Bar Chart
+const skillsCtx = document.getElementById('skillsChart');
+{% if top_skills_labels %}
+new Chart(skillsCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ top_skills_labels|safe }},
+        datasets: [{
+            label: 'Job Count',
+            data: {{ top_skills_data|safe }},
+            backgroundColor: 'rgba(67, 56, 202, 0.8)',
+            borderColor: chartColors.primary,
+            borderWidth: 1,
+            borderRadius: 6,
+            indexAxis: 'y'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

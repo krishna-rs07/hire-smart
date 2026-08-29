@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Batch Screening - {{ job.title }} - Hire Smart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:job_list' %}">Jobs</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:job_detail' job.pk %}">{{ job.title }}</a></li>
+                    <li class="breadcrumb-item active">Batch Screening</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-1">Batch Screening</h2>
+            <p class="text-muted mb-0">Screen all candidates for <strong>{{ job.title }}</strong></p>
+        </div>
+        <div>
+            <a href="{% url 'screening:candidate_ranking' job.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Ranking
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>AI Batch Screening</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>What will happen:</h6>
+                        <ul class="mb-0">
+                            <li>All candidates with completed resumes will be screened against this job</li>
+                            <li>AI will analyze skills, experience, education, and semantic similarity</li>
+                            <li>Each candidate receives a detailed score breakdown and recommendation</li>
+                            <li>Results will be available in the Candidate Ranking page</li>
+                        </ul>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0">
+                                <div class="card-body text-center">
+                                    <h3 class="text-primary">{{ candidate_count }}</h3>
+                                    <p class="mb-0">Candidates to Screen</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0">
+                                <div class="card-body text-center">
+                                    <h3 class="text-success">~{{ candidate_count|add:candidate_count|add:candidate_count }} sec</h3>
+                                    <p class="mb-0">Estimated Time</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3">Job Requirements Summary:</h6>
+                    <div class="row g-2 mb-4">
+                        <div class="col-md-6">
+                            <small class="text-muted">Required Experience</small>
+                            <div>{{ job.experience_required|default:"Not specified" }} years</div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Education</small>
+                            <div>{{ job.education_required|default:"Not specified" }}</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-play-circle me-2"></i>Start Batch Screening
+                            </button>
+                        </form>
+                        <a href="{% url 'screening:candidate_ranking' job.pk %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Responsible AI Notice -->
+            <div class="card border-0 shadow-sm mt-4" style="border-left: 4px solid #6b7280;">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="text-muted me-3">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Responsible AI Notice</h6>
+                            <p class="mb-0 small text-muted">
+                                This AI system is a decision-support tool only. It does not consider protected characteristics
+                                (age, gender, race, ethnicity, disability, etc.) and is designed to reduce bias in screening.
+                                Final hiring decisions must be made by qualified human evaluators. The system provides
+                                explanations for transparency but should not be the sole basis for employment decisions.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

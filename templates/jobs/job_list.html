@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}My Jobs - Hire Smart{% endblock %}
+
+{% block page_title %}My Jobs{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Jobs</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <div class="page-head mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fas fa-briefcase me-2"></i>My Jobs</h2>
+            <p class="text-muted mb-0">Manage your job postings and view screening analytics.</p>
+        </div>
+        <a href="{% url 'jobs:job_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Create New Job
+        </a>
+    </div>
+
+    {% if jobs %}
+    <div class="row g-3">
+        {% for job in jobs %}
+        <div class="col-12">
+            <div class="card animate-slide-up stagger-{{ forloop.counter|divisibleby:6|yesno:'6,1' }}">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="fw-bold mb-1">{{ job.title }}</h5>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ job.location|default:"Not specified" }} ·
+                                <i class="fas fa-clock me-1"></i>{{ job.get_employment_type_display }} ·
+                                <span class="badge badge-status-{{ job.status }} ms-1">{{ job.get_status_display }}</span>
+                            </p>
+                            <p class="text-muted small mb-0">{{ job.description|truncatewords:30 }}</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="d-flex gap-2 justify-content-md-end flex-wrap">
+                                <a href="{% url 'jobs:job_detail' job.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                                <a href="{% url 'jobs:job_edit' job.pk %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                                <a href="{% url 'jobs:job_dashboard' job.pk %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-chart-line me-1"></i>Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Job pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% for num in paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state animate-fade-in">
+        <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto">
+            <i class="fas fa-briefcase fa-2x"></i>
+        </div>
+        <h4 class="fw-bold">No Jobs Yet</h4>
+        <p class="text-muted mb-4">Create your first job posting to start screening candidates.</p>
+        <a href="{% url 'jobs:job_create' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i>Create Your First Job
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

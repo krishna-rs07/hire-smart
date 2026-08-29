@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hire Smart - AI-powered resume screening and candidate ranking for recruiters">
+    <title>{% block title %}Hire Smart{% endblock %}</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<!-- ============ AUTHENTICATED APP SHELL ============ -->
+<div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+        <a class="sidebar-brand" href="{% url 'dashboard:index' %}" aria-label="Hire Smart Home">
+            <span class="sidebar-brand-icon"><i class="fas fa-brain"></i></span>
+            <span class="sidebar-brand-text">Hire Smart</span>
+        </a>
+        {% include 'partials/sidebar_nav.html' %}
+    </aside>
+
+    <!-- Mobile sidebar backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- Main column -->
+    <div class="app-main">
+        <!-- Top header -->
+        <header class="app-header">
+            <button class="btn btn-icon d-lg-none" id="sidebarToggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            {% block page_header %}
+            <div class="app-header-title">
+                <h1 class="h5 mb-0 fw-semibold">{% block page_title %}Dashboard{% endblock %}</h1>
+                {% block breadcrumb %}{% endblock %}
+            </div>
+            {% endblock %}
+
+            <div class="app-header-actions ms-auto">
+                <!-- Notifications -->
+                <div class="dropdown">
+                    <button class="btn btn-icon position-relative" type="button" data-bs-toggle="dropdown" aria-label="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="min-width: 300px;">
+                        <li><h6 class="dropdown-header fw-bold">Notifications</h6></li>
+                        <li><hr class="dropdown-divider m-0"></li>
+                        <li>
+                            <a class="dropdown-item px-3 py-2" href="{% url 'screening:screening_list' %}">
+                                <div class="d-flex align-items-start">
+                                    <div class="icon-badge bg-primary bg-opacity-10 text-primary me-3"><i class="fas fa-user-plus"></i></div>
+                                    <div>
+                                        <div class="fw-medium small">Screening results ready</div>
+                                        <div class="text-muted small">Review newly ranked candidates</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item px-3 py-2" href="{% url 'jobs:job_list' %}">
+                                <div class="d-flex align-items-start">
+                                    <div class="icon-badge bg-success bg-opacity-10 text-success me-3"><i class="fas fa-briefcase"></i></div>
+                                    <div>
+                                        <div class="fw-medium small">Manage your job posts</div>
+                                        <div class="text-muted small">Create or edit openings</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider m-0"></li>
+                        <li><a class="dropdown-item text-center text-primary fw-medium" href="{% url 'screening:screening_list' %}">View all activity</a></li>
+                    </ul>
+                </div>
+
+                <!-- Profile -->
+                <div class="dropdown">
+                    <button class="btn btn-icon-profile d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-label="Account menu">
+                        <span class="avatar">{{ user.username|first|upper }}</span>
+                        <span class="d-none d-md-inline fw-medium">{{ user.username|truncatechars:15 }}</span>
+                        <i class="fas fa-chevron-down small text-muted d-none d-md-inline"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="min-width: 230px;">
+                        <li>
+                            <div class="dropdown-header px-3 py-2">
+                                <div class="fw-bold">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="text-muted small">{{ user.email }}</div>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider m-0"></li>
+                        <li><a class="dropdown-item px-3 py-2" href="{% url 'accounts:profile' %}"><i class="fas fa-user-cog me-2 text-secondary"></i>Profile</a></li>
+                        <li><a class="dropdown-item px-3 py-2" href="{% url 'dashboard:index' %}"><i class="fas fa-tachometer-alt me-2 text-secondary"></i>Dashboard</a></li>
+                        <li><a class="dropdown-item px-3 py-2" href="{% url 'jobs:job_list' %}"><i class="fas fa-briefcase me-2 text-secondary"></i>My Jobs</a></li>
+                        <li><hr class="dropdown-divider m-0"></li>
+                        <li><a class="dropdown-item text-danger px-3 py-2" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="app-content">
+            {% if messages %}
+            <div class="container-fluid px-3 px-lg-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+{% else %}
+<!-- ============ PUBLIC / MARKETING SHELL ============ -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'landing' %}">
+            <span class="brand-logo"><i class="fas fa-brain"></i></span>
+            <span class="ms-2 h5 mb-0">Hire Smart</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <ul class="navbar-nav ms-auto align-items-center gap-1">
+                <li class="nav-item"><a class="nav-link px-3 fw-medium" href="{% url 'landing' %}#features">Features</a></li>
+                <li class="nav-item"><a class="nav-link px-3 fw-medium" href="{% url 'landing' %}#how-it-works">How it Works</a></li>
+                <li class="nav-item"><a class="nav-link px-3 fw-medium" href="{% url 'landing' %}#responsible-ai">Responsible AI</a></li>
+                <li class="nav-item"><a class="nav-link px-3 fw-medium" href="{% url 'accounts:login' %}">Login</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-primary text-white px-3 ms-1" href="{% url 'accounts:register' %}">Get Started</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="pt-5">
+    {% if messages %}
+    <div class="container mt-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% block marketing_content %}
+    <!-- BASE MARKETING_CONTENT BLOCK - should be overridden -->
+    {% endblock %}
+</main>
+
+{% endif %}
+
+<footer class="app-footer py-3">
+    <div class="container text-center text-muted small">
+        &copy; {% now "Y" %} Hire Smart &middot; AI-assisted recruitment &middot;
+        <a href="{% url 'landing' %}#responsible-ai" class="text-decoration-none">Responsible AI</a>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Custom JS -->
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

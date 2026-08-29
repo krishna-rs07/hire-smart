@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load resume_tags %}
+
+{% block title %}Reports - Hire Smart{% endblock %}
+
+{% block page_title %}Reports{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Reports</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <!-- Summary Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ total_jobs }}</div>
+                            <div class="stat-label">Total Jobs</div>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-briefcase fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card h-100" style="border-left-color: #10b981;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value" style="color: #10b981;">{{ total_screenings }}</div>
+                            <div class="stat-label">Total Screenings</div>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-chart-line fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card h-100" style="border-left-color: #3b82f6;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value" style="color: #3b82f6;">
+                                {% if job_summaries %}
+                                    {{ job_summaries|length }} jobs with data
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </div>
+                            <div class="stat-label">Jobs w/ Screenings</div>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-check-circle fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card h-100" style="border-left-color: #f59e0b;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value" style="color: #f59e0b;">
+                                {% if job_summaries %}
+                                    {{ job_summaries|get_item:"avg_total_score"|floatformat:1 }}%
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </div>
+                            <div class="stat-label">Avg Match Score</div>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-percentage fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if job_summaries %}
+    <!-- Job Analytics Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-table me-2"></i>Job Analytics Overview</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="reportsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Screened</th>
+                                    <th class="text-center">Avg Score</th>
+                                    <th class="text-center">Highly Rec.</th>
+                                    <th class="text-center">Recommended</th>
+                                    <th class="text-center">Consider</th>
+                                    <th class="text-center">Not Rec.</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for summary in job_summaries %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ summary.job.title }}</strong>
+                                        <br><small class="text-muted">{{ summary.job.company.username }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if summary.job.status == 'active' %}success{% elif summary.job.status == 'draft' %}secondary{% elif summary.job.status == 'closed' %}warning{% else %}danger{% endif %}">
+                                            {{ summary.job.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center fw-bold">{{ summary.total_screened }}</td>
+                                    <td class="text-center">
+                                        {% if summary.avg_score > 0 %}
+                                        <span class="fw-bold {% if summary.avg_score >= 80 %}text-success{% elif summary.avg_score >= 65 %}text-warning{% else %}text-danger{% endif %}">
+                                            {{ summary.avg_score }}%
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">{{ summary.highly_recommended }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">{{ summary.recommended }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning text-dark">{{ summary.consider }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger">{{ summary.not_recommended }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'jobs:job_dashboard' summary.job.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-chart-bar me-1"></i>View Analytics
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Job Cards for Jobs with Screenings -->
+    <div class="row g-4 mt-4">
+        {% for summary in job_summaries %}
+        {% if summary.total_screened > 0 %}
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{ summary.job.title }}</h6>
+                    <a href="{% url 'jobs:job_dashboard' summary.job.pk %}" class="btn btn-sm btn-outline-primary">Full Report</a>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-3">
+                            <div class="fw-bold text-success fs-5">{{ summary.highly_recommended }}</div>
+                            <small class="text-muted">Highly Rec.</small>
+                        </div>
+                        <div class="col-3">
+                            <div class="fw-bold text-primary fs-5">{{ summary.recommended }}</div>
+                            <small class="text-muted">Recommended</small>
+                        </div>
+                        <div class="col-3">
+                            <div class="fw-bold text-warning fs-5">{{ summary.consider }}</div>
+                            <small class="text-muted">Consider</small>
+                        </div>
+                        <div class="col-3">
+                            <div class="fw-bold text-danger fs-5">{{ summary.not_recommended }}</div>
+                            <small class="text-muted">Not Rec.</small>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ summary.total_screened }} candidates screened</small>
+                        <span class="fw-bold {% if summary.avg_score >= 80 %}text-success{% elif summary.avg_score >= 65 %}text-warning{% else %}text-danger{% endif %} fs-5">
+                            Avg: {{ summary.avg_score }}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="icon-badge bg-secondary bg-opacity-10 text-secondary mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h4 class="fw-bold">No Reports Available</h4>
+                    <p class="text-muted mb-4">Create jobs and screen candidates to generate hiring analytics.</p>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <a href="{% url 'jobs:job_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create Job
+                        </a>
+                        <a href="{% url 'resumes:resume_upload' %}" class="btn btn-success">
+                            <i class="fas fa-upload me-2"></i>Upload Resumes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Responsible AI Disclaimer -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="icon-badge bg-warning bg-opacity-10 text-warning flex-shrink-0">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Responsible AI Notice</h6>
+                            <p class="small text-muted mb-0">
+                                This AI-assisted reporting is a decision-support tool, not a replacement for human judgment.
+                                Analytics reflect keyword/skill matching and semantic similarity against job descriptions.
+                                They may not capture soft skills, cultural fit, career trajectory, or non-traditional backgrounds.
+                                Always review candidates holistically and ensure compliance with equal opportunity laws.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .stat-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+    .icon-badge {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}

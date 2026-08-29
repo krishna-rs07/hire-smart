@@ -1,0 +1,1 @@
+# Hire Smart - Django Configuration Package

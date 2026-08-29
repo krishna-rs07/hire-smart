@@ -1,0 +1,32 @@
+# Hire Smart - Requirements
+# Core
+Django>=5.2,<6.0
+djangorestframework>=3.15,<4.0
+python-dotenv>=1.0,<2.0
+
+# Forms and UI
+django-crispy-forms>=2.1,<3.0
+crispy-bootstrap5>=2024.10
+
+# Database (PostgreSQL ready)
+psycopg2-binary>=2.9,<3.0
+
+# File processing
+Pillow>=10.0,<11.0
+
+# For Phase 2 - AI/ML/NLP
+# Will be installed in Phase 2
+# spacy>=3.7,<4.0
+# scikit-learn>=1.3,<2.0
+# nltk>=3.8,<4.0
+# sentence-transformers>=2.2,<3.0
+# PyMuPDF>=1.23,<2.0
+# python-docx>=1.1,<2.0
+# pandas>=2.1,<3.0
+# numpy>=1.26,<2.0
+
+# Development
+# black>=24.0,<25.0
+# flake8>=7.0,<8.0
+# pytest>=8.0,<9.0
+# pytest-django>=4.8,<5.0

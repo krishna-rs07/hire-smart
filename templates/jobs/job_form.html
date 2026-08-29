@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Job - Hire Smart{% endblock %}
+
+{% block page_title %}{% if object %}Edit Job{% else %}Create Job{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'jobs:job_list' %}">Jobs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{% if object %}Edit{% else %}Create{% endif %} Job</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-{% if object %}edit{% else %}plus{% endif %} me-2"></i>{% if object %}Edit{% else %}Create{% endif %} Job Posting</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Title & Status -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">Job Title <span class="text-danger">*</span></label>
+                                {{ form.title }}
+                                {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Be specific: <code>Senior Python Developer</code> not <code>Developer</code>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.status.id_for_label }}" class="form-label fw-semibold">Status</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Employment Type & Location -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.employment_type.id_for_label }}" class="form-label fw-semibold">Employment Type</label>
+                                {{ form.employment_type }}
+                                {% if form.employment_type.errors %}<div class="text-danger small">{{ form.employment_type.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.location.id_for_label }}" class="form-label fw-semibold">Location</label>
+                                {{ form.location }}
+                                {% if form.location.errors %}<div class="text-danger small">{{ form.location.errors }}</div>{% endif %}
+                                <div class="form-text"><i class="fas fa-info-circle me-1"></i>City, State or "Remote"</div>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">Job Description <span class="text-danger">*</span></label>
+                            {{ form.description }}
+                            <div class="form-text">
+                                Describe the role, responsibilities, and what you're looking for.
+                                <br>Example: "We're seeking a Senior Python Developer to build scalable backend services.
+                                You'll design REST APIs, optimize database queries, and mentor junior developers.
+                                3+ years Python, Django, PostgreSQL required. AWS experience a plus."
+                            </div>
+                            {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
+                        </div>
+
+                        <!-- Skills -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.required_skills.id_for_label }}" class="form-label fw-semibold">Required Skills <span class="text-danger">*</span></label>
+                                {{ form.required_skills }}
+                                <div class="form-text">
+                                    Comma-separated (e.g., <code>Python, Django, REST API, PostgreSQL, Git, Docker</code>)
+                                </div>
+                                {% if form.required_skills.errors %}<div class="text-danger small">{{ form.required_skills.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.preferred_skills.id_for_label }}" class="form-label fw-semibold">Preferred Skills</label>
+                                {{ form.preferred_skills }}
+                                <div class="form-text">
+                                    Nice-to-have skills (comma-separated, e.g., <code>FastAPI, Celery, Redis, AWS, Kubernetes</code>)
+                                </div>
+                                {% if form.preferred_skills.errors %}<div class="text-danger small">{{ form.preferred_skills.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Experience & Education -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.minimum_experience.id_for_label }}" class="form-label fw-semibold">Minimum Experience (years) <span class="text-danger">*</span></label>
+                                {{ form.minimum_experience }}
+                                {% if form.minimum_experience.errors %}<div class="text-danger small">{{ form.minimum_experience.errors }}</div>{% endif %}
+                                <div class="form-text"><i class="fas fa-info-circle me-1"></i>Years of professional experience required</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.education_requirement.id_for_label }}" class="form-label fw-semibold">Education Requirement</label>
+                                {{ form.education_requirement }}
+                                <div class="form-text">
+                                    e.g., <code>B.Tech Computer Science</code>, <code>M.Tech Data Science</code>,
+                                    <code>Bachelor's degree in CS or equivalent</code>
+                                </div>
+                                {% if form.education_requirement.errors %}<div class="text-danger small">{{ form.education_requirement.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'jobs:job_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>{% if object %}Update{% else %}Create{% endif %} Job
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--hire-accent);
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.15);
+    }
+    textarea.form-control {
+        min-height: 140px;
+        font-family: inherit;
+    }
+    .form-text code {
+        background: var(--hire-light);
+        padding: 0.1rem 0.3rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        color: var(--hire-primary);
+    }
+</style>
+{% endblock %}
+{% endblock %}

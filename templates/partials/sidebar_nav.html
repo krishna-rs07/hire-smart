@@ -1,0 +1,37 @@
+{% load i18n %}
+<nav class="sidebar-nav flex-column p-3">
+    <a class="sidebar-link {% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}"
+       href="{% url 'dashboard:index' %}">
+        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+    </a>
+    <a class="sidebar-link {% if request.resolver_match.namespace == 'jobs' %}active{% endif %}"
+       href="{% url 'jobs:job_list' %}">
+        <i class="fas fa-briefcase"></i><span>Jobs</span>
+    </a>
+    <a class="sidebar-link {% if request.resolver_match.namespace == 'resumes' and request.resolver_match.url_name == 'candidate_list' %}active{% endif %}"
+       href="{% url 'resumes:candidate_list' %}">
+        <i class="fas fa-users"></i><span>Candidates</span>
+    </a>
+    <a class="sidebar-link {% if request.resolver_match.namespace == 'resumes' and request.resolver_match.url_name == 'resume_list' %}active{% endif %}"
+       href="{% url 'resumes:resume_list' %}">
+        <i class="fas fa-file-alt"></i><span>Resumes</span>
+    </a>
+    <a class="sidebar-link {% if request.resolver_match.namespace == 'screening' %}active{% endif %}"
+       href="{% url 'screening:screening_list' %}">
+        <i class="fas fa-chart-line"></i><span>Screening</span>
+    </a>
+    <a class="sidebar-link {% if request.resolver_match.namespace == 'reports' %}active{% endif %}"
+       href="{% url 'reports:index' %}">
+        <i class="fas fa-chart-bar"></i><span>Reports</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+
+    <a class="sidebar-link {% if request.resolver_match.namespace == 'accounts' %}active{% endif %}"
+       href="{% url 'accounts:profile' %}">
+        <i class="fas fa-user-cog"></i><span>Profile</span>
+    </a>
+    <a class="sidebar-link text-danger" href="{% url 'accounts:logout' %}">
+        <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+    </a>
+</nav>

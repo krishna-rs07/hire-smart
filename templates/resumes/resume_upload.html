@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Resumes - Hire Smart{% endblock %}
+
+{% block page_title %}Upload Resumes{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'resumes:resume_list' %}">Resumes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Upload</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Upload Form Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Resumes</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if job %}
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Uploading for: <strong>{{ job.title }}</strong>
+                        <input type="hidden" name="job" value="{{ job.pk }}">
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" id="uploadForm" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Select Resume Files <span class="text-danger">*</span></label>
+                            <div class="drop-zone border-2 border-dashed rounded-3 p-4 text-center" id="dropZone">
+                                <input type="file" class="form-control visually-hidden" name="resumes" id="resumes" multiple accept=".pdf,.docx" required>
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <p class="fw-medium mb-1">Drag & drop files here, or click to browse</p>
+                                <p class="text-muted small mb-0">PDF or DOCX files · Max 10MB each · Multiple files supported</p>
+                            </div>
+                            <div class="form-text mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Supported: PDF (via PyMuPDF), DOCX (via python-docx)
+                            </div>
+                        </div>
+
+                        <div id="file-preview" class="mb-4"></div>
+
+                        <div id="upload-progress" class="mb-4 d-none">
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="progressBar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <p class="small text-muted mb-0" id="progressText">Preparing upload...</p>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% if job %}{% url 'jobs:job_dashboard' job.pk %}{% else %}{% url 'resumes:resume_list' %}{% endif %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                                <i class="fas fa-upload me-2"></i><span class="btn-text">Upload Resumes</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Processing Status -->
+                    <div id="processing-status" class="mt-4 d-none">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="fas fa-cogs fa-spin me-2"></i>Processing Resumes</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="spinner-border spinner-border-sm text-info me-3" role="status"></div>
+                                    <div>
+                                        <div class="fw-medium" id="processingTitle">Extracting text and analyzing...</div>
+                                        <div class="small text-muted" id="processingDetail">This may take a few moments</div>
+                                    </div>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" id="processingBar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Results (shown after successful upload) -->
+            <div id="upload-results" class="card shadow-sm mb-4 d-none">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Upload Complete</h5>
+                    <button type="button" class="btn btn-sm btn-light" id="uploadMoreBtn">
+                        <i class="fas fa-plus me-1"></i>Upload More
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3" id="resultsSummary">
+                        <div class="col-4 text-center">
+                            <div class="fs-3 fw-bold text-success" id="successCount">0</div>
+                            <div class="small text-muted">Uploaded</div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="fs-3 fw-bold text-warning" id="pendingCount">0</div>
+                            <div class="small text-muted">Processing</div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="fs-3 fw-bold text-danger" id="errorCount">0</div>
+                            <div class="small text-muted">Errors</div>
+                        </div>
+                    </div>
+                    <div class="table-responsive" id="resultsTableContainer">
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>File</th>
+                                    <th>Candidate</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Actions -->
+            <div id="next-actions" class="card shadow-sm mb-4 d-none">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Next Actions</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Your resumes are being processed. Once complete, you can:</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if job %}
+                        <a href="{% url 'jobs:job_dashboard' job.pk %}" class="btn btn-primary">
+                            <i class="fas fa-chart-bar me-2"></i>View Candidate Rankings
+                        </a>
+                        <a href="{% url 'screening:batch_screen_job' job.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-play-circle me-2"></i>Screen All Candidates
+                        </a>
+                        {% else %}
+                        <a href="{% url 'resumes:resume_list' %}" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>View All Resumes
+                        </a>
+                        <a href="{% url 'resumes:candidate_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-users me-2"></i>View Candidates
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Guidelines -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for Better Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-success"><i class="fas fa-check-circle me-2"></i>Do</h6>
+                            <ul class="text-success mb-0">
+                                <li>Use standard resume formats (PDF/DOCX)</li>
+                                <li>Include clear skill sections</li>
+                                <li>List technologies explicitly (e.g., Python, Django, AWS)</li>
+                                <li>Provide complete work history with dates</li>
+                                <li>Use standard section headers (Experience, Education, Skills)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-danger"><i class="fas fa-times-circle me-2"></i>Avoid</h6>
+                            <ul class="text-danger mb-0">
+                                <li>Password-protected or encrypted PDFs</li>
+                                <li>Scanned/image-only PDFs (no selectable text)</li>
+                                <li>Corrupted or incomplete files</li>
+                                <li>Unusual file formats (.pages, .odt, .rtf, etc.)</li>
+                                <li>Files larger than 10MB</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('resumes');
+    const filePreview = document.getElementById('file-preview');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const processingStatus = document.getElementById('processing-status');
+    const uploadResults = document.getElementById('upload-results');
+    const nextActions = document.getElementById('next-actions');
+    const successCount = document.getElementById('successCount');
+    const pendingCount = document.getElementById('pendingCount');
+    const errorCount = document.getElementById('errorCount');
+    const resultsTableBody = document.getElementById('resultsTableBody');
+    const uploadMoreBtn = document.getElementById('uploadMoreBtn');
+
+    let selectedFiles = [];
+
+    // Drag and drop handlers
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropZone.classList.add('border-primary', 'bg-primary', 'bg-opacity-10');
+    }
+
+    function unhighlight() {
+        dropZone.classList.remove('border-primary', 'bg-primary', 'bg-opacity-10');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    function handleDrop(e) {
+        const files = Array.from(e.dataTransfer.files);
+        handleFiles(files);
+    }
+
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(Array.from(e.target.files));
+    });
+
+    function handleFiles(files) {
+        const validFiles = [];
+        let hasErrors = false;
+
+        files.forEach(file => {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['pdf', 'docx'].includes(ext)) {
+                showError(`${file.name}: Unsupported format. Only PDF and DOCX allowed.`);
+                hasErrors = true;
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                showError(`${file.name}: File too large (max 10MB).`);
+                hasErrors = true;
+                return;
+            }
+            // Check for duplicates
+            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                validFiles.push(file);
+            }
+        });
+
+        if (validFiles.length > 0) {
+            selectedFiles = [...selectedFiles, ...validFiles];
+            updateFilePreview();
+            submitBtn.disabled = false;
+        }
+    }
+
+    function updateFilePreview() {
+        filePreview.innerHTML = '';
+
+        if (selectedFiles.length === 0) {
+            submitBtn.disabled = true;
+            return;
+        }
+
+        const header = document.createElement('div');
+        header.className = 'd-flex justify-content-between align-items-center mb-2';
+        header.innerHTML = `
+            <span class="fw-semibold">Selected ${selectedFiles.length} file(s)</span>
+            <button type="button" class="btn btn-sm btn-outline-danger" id="clearFilesBtn">
+                <i class="fas fa-trash me-1"></i>Clear All
+            </button>
+        `;
+        filePreview.appendChild(header);
+
+        document.getElementById('clearFilesBtn').addEventListener('click', function() {
+            selectedFiles = [];
+            fileInput.value = '';
+            updateFilePreview();
+        });
+
+        selectedFiles.forEach((file, index) => {
+            const div = document.createElement('div');
+            div.className = 'd-flex align-items-center justify-content-between p-2 border rounded mb-2 bg-light';
+            div.dataset.index = index;
+            const icon = file.name.endsWith('.pdf') ? 'fa-file-pdf text-danger' : 'fa-file-word text-primary';
+            div.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas ${icon} me-2 fa-lg"></i>
+                    <span>${file.name}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-file" data-index="${index}" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            filePreview.appendChild(div);
+        });
+
+        // Add remove handlers
+        filePreview.querySelectorAll('.remove-file').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                selectedFiles.splice(index, 1);
+                updateFilePreview();
+            });
+        });
+    }
+
+    function showError(message) {
+        const div = document.createElement('div');
+        div.className = 'alert alert-danger alert-dismissible fade show mt-2';
+        div.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        filePreview.prepend(div);
+    }
+
+    // Form submission
+    uploadForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (selectedFiles.length === 0) return;
+
+        // Show progress
+        uploadProgress.classList.remove('d-none');
+        submitBtn.disabled = true;
+        dropZone.style.pointerEvents = 'none';
+        dropZone.style.opacity = '0.5';
+
+        // Simulate progress (real upload would use FormData + fetch with progress)
+        const formData = new FormData();
+        selectedFiles.forEach(file => formData.append('resumes', file));
+        {% if job %}
+        formData.append('job', '{{ job.pk }}');
+        {% endif %}
+
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress = Math.min(progress + Math.random() * 15, 90);
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `Uploading... ${Math.round(progress)}%`;
+        }, 200);
+
+        try {
+            const response = await fetch('{% url "resumes:resume_upload" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            progressText.textContent = 'Upload complete! Processing...';
+
+            const data = await response.json();
+
+            // Hide progress, show results
+            setTimeout(() => {
+                uploadProgress.classList.add('d-none');
+                showResults(data);
+            }, 500);
+
+        } catch (error) {
+            clearInterval(progressInterval);
+            uploadProgress.classList.add('d-none');
+            dropZone.style.pointerEvents = 'auto';
+            dropZone.style.opacity = '1';
+            submitBtn.disabled = false;
+            showError('Upload failed. Please try again.');
+        }
+    });
+
+    function showResults(data) {
+        uploadForm.reset();
+        selectedFiles = [];
+        updateFilePreview();
+
+        uploadResults.classList.remove('d-none');
+        nextActions.classList.remove('d-none');
+
+        successCount.textContent = data.success_count || 0;
+        pendingCount.textContent = data.pending_count || 0;
+        errorCount.textContent = data.error_count || 0;
+
+        resultsTableBody.innerHTML = '';
+        if (data.results) {
+            data.results.forEach(result => {
+                const row = document.createElement('tr');
+                const statusBadge = getStatusBadge(result.status);
+                row.innerHTML = `
+                    <td><i class="fas ${result.file_type === 'pdf' ? 'fa-file-pdf text-danger' : 'fa-file-word text-primary'} me-2"></i>${result.filename}</td>
+                    <td>${result.candidate_name || '—'}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        {% if job %}
+                        <a href="{% url 'screening:screen_resume' 0 job.pk %}".replace('0', '${result.resume_id}')" class="btn btn-sm btn-outline-primary" title="Screen Now">
+                            <i class="fas fa-search"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'resumes:resume_detail' 0 %}".replace('0', '${result.resume_id}')" class="btn btn-sm btn-outline-secondary" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                `;
+                resultsTableBody.appendChild(row);
+            });
+        }
+    }
+
+    function getStatusBadge(status) {
+        const badges = {
+            'completed': '<span class="badge bg-success">Ready</span>',
+            'processing': '<span class="badge bg-info">Processing</span>',
+            'pending': '<span class="badge bg-warning text-dark">Pending</span>',
+            'failed': '<span class="badge bg-danger">Failed</span>'
+        };
+        return badges[status] || '<span class="badge bg-secondary">Unknown</span>';
+    }
+
+    uploadMoreBtn.addEventListener('click', function() {
+        uploadResults.classList.add('d-none');
+        nextActions.classList.add('d-none');
+        dropZone.style.pointerEvents = 'auto';
+        dropZone.style.opacity = '1';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

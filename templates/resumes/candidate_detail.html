@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ candidate.name }} - Candidate Profile - Hire Smart{% endblock %}
+
+{% block page_title %}{{ candidate.name }}{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'resumes:candidate_list' %}">Candidates</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ candidate.name }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4">
+    <div class="page-head mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">{{ candidate.name }}</h2>
+            <p class="text-muted mb-0">Created {{ candidate.created_at|date:"M d, Y" }} · {{ candidate.resumes.count }} resume{{ candidate.resumes.count|pluralize }} · {{ candidate.screening_results.count }} screening{{ candidate.screening_results.count|pluralize }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'resumes:resume_upload' %}" class="btn btn-primary">
+                <i class="fas fa-upload me-1"></i>Upload Resume
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <!-- Profile Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Profile</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px; font-size: 2.5rem;">
+                            {{ candidate.name|first|upper }}
+                        </div>
+                    </div>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">{{ candidate.email|default:"Not provided" }}</dd>
+
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8">{{ candidate.phone|default:"Not provided" }}</dd>
+
+                        <dt class="col-sm-4">Location</dt>
+                        <dd class="col-sm-8">{{ candidate.location|default:"Not provided" }}</dd>
+
+                        <dt class="col-sm-4">Experience</dt>
+                        <dd class="col-sm-8">{{ candidate.total_experience }} year{{ candidate.total_experience|pluralize }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Education -->
+            {% if candidate.education %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Education</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ candidate.education }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Certifications -->
+            {% if candidate.certifications %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-certificate me-2"></i>Certifications</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        {% for cert in candidate.certifications %}
+                        <li class="mb-1"><i class="fas fa-award text-warning me-2"></i>{{ cert }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-8">
+            <!-- Skills -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-code me-2"></i>Skills ({{ candidate.skills|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if candidate.skills %}
+                    <div class="flex-wrap">
+                        {% for skill in candidate.skills %}
+                        <span class="skill-pill">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No skills extracted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Resumes -->
+            {% if resumes %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Resumes</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive table-responsive-stack">
+                        <table class="table table-hover mb-0 table-mobile-cards">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>File</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Uploaded</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resume in resumes %}
+                                <tr>
+                                    <td data-label="File">{{ resume.file.name|truncatechars:40 }}</td>
+                                    <td data-label="Type">
+                                        <span class="badge badge-resume-{{ resume.file_type }}">
+                                            {{ resume.get_file_type_display }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Status">
+                                        <span class="badge badge-status-{{ resume.status }}">
+                                            {{ resume.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Uploaded">{{ resume.uploaded_at|date:"M d, Y H:i" }}</td>
+                                    <td data-label="Actions">
+                                        <a href="{% url 'resumes:resume_detail' resume.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Screening Results -->
+            {% if screening_results %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Screening History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive table-responsive-stack">
+                        <table class="table table-hover mb-0 table-mobile-cards">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Job</th>
+                                    <th class="text-center">Overall Score</th>
+                                    <th class="text-center">Skills</th>
+                                    <th class="text-center">Semantic</th>
+                                    <th class="text-center">Experience</th>
+                                    <th class="text-center">Education</th>
+                                    <th>Recommendation</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in screening_results %}
+                                <tr>
+                                    <td data-label="Job">
+                                        <strong>{{ result.job.title }}</strong>
+                                    </td>
+                                    <td class="text-center" data-label="Overall Score">
+                                        <span class="fw-bold {% if result.overall_score >= 90 %}score-excellent{% elif result.overall_score >= 80 %}score-good{% elif result.overall_score >= 65 %}score-fair{% else %}score-poor{% endif %}">
+                                            {{ result.overall_score }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center" data-label="Skills">
+                                        <span class="fw-medium {% if result.skill_score >= 80 %}score-excellent{% elif result.skill_score >= 60 %}score-fair{% else %}score-poor{% endif %}">{{ result.skill_score }}%</span>
+                                    </td>
+                                    <td class="text-center" data-label="Semantic">
+                                        <span class="fw-medium {% if result.semantic_score >= 80 %}score-excellent{% elif result.semantic_score >= 60 %}score-fair{% else %}score-poor{% endif %}">{{ result.semantic_score }}%</span>
+                                    </td>
+                                    <td class="text-center" data-label="Experience">
+                                        <span class="fw-medium {% if result.experience_score >= 80 %}score-excellent{% elif result.experience_score >= 60 %}score-fair{% else %}score-poor{% endif %}">{{ result.experience_score }}%</span>
+                                    </td>
+                                    <td class="text-center" data-label="Education">
+                                        <span class="fw-medium {% if result.education_score >= 80 %}score-excellent{% elif result.education_score >= 60 %}score-fair{% else %}score-poor{% endif %}">{{ result.education_score }}%</span>
+                                    </td>
+                                    <td data-label="Recommendation">
+                                        {% if result.recommendation == "Highly Recommended" %}
+                                        <span class="badge badge-rec-highly">{{ result.recommendation }}</span>
+                                        {% elif result.recommendation == "Recommended" %}
+                                        <span class="badge badge-rec-recommended">{{ result.recommendation }}</span>
+                                        {% elif result.recommendation == "Consider" %}
+                                        <span class="badge badge-rec-consider">{{ result.recommendation }}</span>
+                                        {% else %}
+                                        <span class="badge badge-rec-not">{{ result.recommendation }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Status">
+                                        <span class="badge badge-status-{{ result.status }}">
+                                            {{ result.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Date">{{ result.screened_at|date:"M d, Y" }}</td>
+                                    <td class="text-center" data-label="Actions">
+                                        <a href="{% url 'screening:screening_detail' result.pk %}" class="btn btn-sm btn-outline-primary">Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
