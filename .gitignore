@@ -55,3 +55,4 @@ htmlcov/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+cookies.jar
