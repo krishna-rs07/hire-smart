@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Tuple
 
-import fitz  # PyMuPDF
+import pymupdf as fitz  # PyMuPDF
 from docx import Document
 
 logger = logging.getLogger(__name__)
